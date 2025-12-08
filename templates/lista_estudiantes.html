@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Lista de Estudiantes{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header-section">
+        <h2>📚 Gestión de Estudiantes</h2>
+        <a href="{{ url_for('nuevo_estudiante') }}" class="btn-primary">➕ Registrar Nuevo Estudiante</a>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" class="filter-form">
+        <label>Buscar:
+            <input type="text" name="busqueda" value="{{ busqueda or '' }}" placeholder="Nombre o matrícula">
+        </label>
+
+        <label>Cuatrimestre:
+            <select name="cuatrimestre">
+                <option value="">Todos</option>
+                {% for cuatri in cuatrimestres %}
+                <option value="{{ cuatri }}" {% if cuatrimestre_filtro == cuatri %}selected{% endif %}>{{ cuatri }}°</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <button type="submit">Filtrar</button>
+        <a href="{{ url_for('lista_estudiantes') }}" class="btn-secondary">Limpiar</a>
+    </form>
+
+    <!-- Tabla de estudiantes -->
+    {% if estudiantes %}
+    <div class="card">
+        <h3>Estudiantes Registrados ({{ estudiantes|length }})</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Matrícula</th>
+                    <th>Nombre Completo</th>
+                    <th>Carrera</th>
+                    <th>Cuatrimestre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for e in estudiantes %}
+                <tr>
+                    <td><strong>{{ e['matricula'] }}</strong></td>
+                    <td>{{ e['nombre'] }} {{ e['apellido_p'] }} {{ e['apellido_m'] }}</td>
+                    <td>{{ e['carrera'] or 'N/A' }}</td>
+                    <td>{{ e['cuatrimestre_actual'] }}°</td>
+                    <td>
+                        <a href="{{ url_for('perfil_estudiante', id=e['id']) }}" title="Ver Perfil">👤</a>
+                        <a href="{{ url_for('editar_estudiante', id=e['id']) }}" title="Editar">✏️</a>
+                        <form action="{{ url_for('eliminar_estudiante', id=e['id']) }}" method="post" style="display:inline;">
+                            <button type="submit" onclick="return confirm('¿Eliminar este estudiante?')" title="Eliminar">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card">
+        <p style="text-align:center; color:#999;">No hay estudiantes registrados.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    background: #cc1313;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #a00f0f;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.filter-form {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    margin-bottom: 20px;
+}
+
+.filter-form label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #333;
+}
+
+.filter-form input,
+.filter-form select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+.filter-form button {
+    padding: 10px 20px;
+    background: #cc1313;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.filter-form button:hover {
+    background: #a00f0f;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+table button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}
+</style>
+{% endblock %}

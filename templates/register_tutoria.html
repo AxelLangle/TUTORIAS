@@ -8,21 +8,51 @@
         <!-- Título dentro del contenedor -->
         <h2 style="text-align:center; color:#cc1313; margin-bottom:25px; font-size:2rem;">Registrar Tutoría Individual</h2>
 
-        <label>Nombre:
-            <input name="nombre" required placeholder="Juan">
-        </label>
-        <label>Apellido Paterno:
-            <input name="apellido_p" required placeholder="Pérez">
-        </label>
-        <label>Apellido Materno:
-            <input name="apellido_m" required placeholder="Gómez">
-        </label>
-        <label>Matrícula:
-            <input name="matricula" type="text" required placeholder="1323148541" pattern="\d+" required title="Solo números">
-        </label>
-        <label>Cuatrimestre:
-            <input name="cuatrimestre" required placeholder="3°">
-        </label>
+        <!-- Selección de estudiante -->
+        <div class="student-selector">
+            <label>Seleccionar Estudiante Existente:
+                <select id="estudiante_select" name="estudiante_id" onchange="toggleStudentForm()">
+                    <option value="">Registrar nuevo estudiante...</option>
+                    {% for est in estudiantes %}
+                    <option value="{{ est['id'] }}">{{ est['matricula'] }} - {{ est['nombre'] }} {{ est['apellido_p'] }} {{ est['apellido_m'] }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+
+        <!-- Formulario de nuevo estudiante (se oculta si se selecciona uno existente) -->
+        <div id="new_student_form">
+            <label>Nombre:
+                <input id="nombre" name="nombre" placeholder="Juan">
+            </label>
+            <label>Apellido Paterno:
+                <input id="apellido_p" name="apellido_p" placeholder="Pérez">
+            </label>
+            <label>Apellido Materno:
+                <input id="apellido_m" name="apellido_m" placeholder="Gómez">
+            </label>
+            <label>Matrícula:
+                <input id="matricula" name="matricula" type="text" placeholder="1323148541" pattern="\d+" title="Solo números">
+            </label>
+            <label>Cuatrimestre (Período: {{ periodo_actual }}):
+                <select id="cuatrimestre" name="cuatrimestre">
+                    <option value="">Seleccione...</option>
+                    {% for cuatri in cuatrimestres_disponibles %}
+                    <option value="{{ cuatri }}">{{ cuatri }}°</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Carrera:
+                <select id="carrera" name="carrera">
+                    <option value="">Seleccione...</option>
+                    <option value="Ingeniería en Software">Ingeniería en Software</option>
+                    <option value="Ingeniería en Sistemas">Ingeniería en Sistemas</option>
+                    <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+                    <option value="Administración">Administración</option>
+                    <option value="Contaduría">Contaduría</option>
+                </select>
+            </label>
+        </div>
         <label>Motivo:
             <input name="motivo" required placeholder="Motivo de la tutoría">
         </label>
@@ -105,6 +135,58 @@
 .form-container textarea {
     min-height: 70px;
 }
+
+.form-container select {
+    margin-top: 6px;
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.form-container select:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.35);
+    outline: none;
+}
+
+.student-selector {
+    background: #f0f8ff;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #cc1313;
+}
 </style>
+
+<script>
+function toggleStudentForm() {
+    const select = document.getElementById('estudiante_select');
+    const form = document.getElementById('new_student_form');
+    const inputs = form.querySelectorAll('input, select');
+    
+    if (select.value) {
+        // Si se seleccionó un estudiante existente, ocultar el formulario
+        form.style.display = 'none';
+        inputs.forEach(input => {
+            input.required = false;
+        });
+    } else {
+        // Si no, mostrar el formulario
+        form.style.display = 'grid';
+        // Hacer campos requeridos
+        document.getElementById('nombre').required = true;
+        document.getElementById('apellido_p').required = true;
+        document.getElementById('matricula').required = true;
+        document.getElementById('cuatrimestre').required = true;
+        document.getElementById('carrera').required = true;
+    }
+}
+
+// Llamar al cargar la página
+window.onload = function() {
+    toggleStudentForm();
+};
+</script>
 {% endblock %}
 

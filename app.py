@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, g, session, flash, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, g, flash, send_file
 import re
 import sqlite3
 from datetime import datetime
@@ -6,15 +6,20 @@ from functools import wraps
 from pdf_generator import PDFReportGenerator
 from academic_history import AcademicHistoryAnalyzer
 from risk_assessment import RiskAssessmentEngine
+from utils import obtener_cuatrimestres_disponibles, obtener_nombre_periodo, validar_cuatrimestre
 
 DATABASE = 'asesorias.db'
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # Necesario para sesiones
 
-# Agregar datetime al contexto de Jinja2
+# Agregar datetime y cuatrimestres al contexto de Jinja2
 @app.context_processor
 def inject_now():
-    return {'now': datetime.now}
+    return {
+        'now': datetime.now,
+        'cuatrimestres_disponibles': obtener_cuatrimestres_disponibles(),
+        'periodo_actual': obtener_nombre_periodo()
+    }
 
 # ---------------------------
 # Helpers de DB
@@ -63,6 +68,7 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS tutoria (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            estudiante_id INTEGER,
             nombre TEXT,
             apellido_p TEXT,
             apellido_m TEXT,
@@ -73,7 +79,8 @@ def init_db():
             descripcion TEXT,
             observaciones TEXT,
             seguimiento TEXT,
-            created_at TEXT
+            created_at TEXT,
+            FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id)
         )
     ''')
     # Tabla tutorías grupales
@@ -89,6 +96,20 @@ def init_db():
             asistentes TEXT,
             observaciones TEXT,
             created_at TEXT
+        )
+    ''')
+    # Tabla estudiantes
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS estudiantes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            matricula TEXT UNIQUE NOT NULL,
+            nombre TEXT NOT NULL,
+            apellido_p TEXT NOT NULL,
+            apellido_m TEXT,
+            cuatrimestre_actual TEXT,
+            carrera TEXT,
+            created_at TEXT,
+            updated_at TEXT
         )
     ''')
     db.commit()
@@ -255,22 +276,72 @@ def register_asesoria():
 @app.route('/register/tutoria', methods=['GET', 'POST'])
 @login_required
 def register_tutoria():
+    db = get_db()
+    
     if request.method == 'POST':
         data = request.form
-        db = get_db()
-        db.execute('''
-            INSERT INTO tutoria (nombre, apellido_p, apellido_m, matricula, cuatrimestre, motivo, fecha, descripcion, observaciones, seguimiento, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            data.get('nombre'), data.get('apellido_p'), data.get('apellido_m'),
-            data.get('matricula'), data.get('cuatrimestre'), data.get('motivo'),
-            data.get('fecha'), data.get('descripcion'), data.get('observaciones'),
-            data.get('seguimiento'), datetime.utcnow().isoformat()
-        ))
-        db.commit()
-        flash('Tutoría registrada correctamente.', 'success')
-        return redirect(url_for('consultas'))
-    return render_template('register_tutoria.html', nombre=session.get('nombre'))
+        estudiante_id = data.get('estudiante_id')
+        
+        # Si se seleccionó un estudiante existente
+        if estudiante_id:
+            estudiante = db.execute("SELECT * FROM estudiantes WHERE id = ?", (estudiante_id,)).fetchone()
+            if estudiante:
+                db.execute('''
+                    INSERT INTO tutoria (estudiante_id, nombre, apellido_p, apellido_m, matricula, cuatrimestre, motivo, fecha, descripcion, observaciones, seguimiento, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    estudiante_id,
+                    estudiante['nombre'], estudiante['apellido_p'], estudiante['apellido_m'],
+                    estudiante['matricula'], estudiante['cuatrimestre_actual'], data.get('motivo'),
+                    data.get('fecha'), data.get('descripcion'), data.get('observaciones'),
+                    data.get('seguimiento'), datetime.utcnow().isoformat()
+                ))
+                db.commit()
+                flash('Tutoría registrada correctamente.', 'success')
+                return redirect(url_for('consultas'))
+        else:
+            # Registrar nuevo estudiante y luego la tutoría
+            matricula = data.get('matricula')
+            
+            # Verificar si ya existe un estudiante con esa matrícula
+            estudiante = db.execute("SELECT * FROM estudiantes WHERE matricula = ?", (matricula,)).fetchone()
+            
+            if not estudiante:
+                # Crear nuevo estudiante
+                db.execute('''
+                    INSERT INTO estudiantes (matricula, nombre, apellido_p, apellido_m, cuatrimestre_actual, carrera, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    matricula,
+                    data.get('nombre'),
+                    data.get('apellido_p'),
+                    data.get('apellido_m'),
+                    data.get('cuatrimestre'),
+                    data.get('carrera', 'No especificada'),
+                    datetime.utcnow().isoformat(),
+                    datetime.utcnow().isoformat()
+                ))
+                db.commit()
+                estudiante = db.execute("SELECT * FROM estudiantes WHERE matricula = ?", (matricula,)).fetchone()
+            
+            # Registrar tutoría
+            db.execute('''
+                INSERT INTO tutoria (estudiante_id, nombre, apellido_p, apellido_m, matricula, cuatrimestre, motivo, fecha, descripcion, observaciones, seguimiento, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                estudiante['id'],
+                data.get('nombre'), data.get('apellido_p'), data.get('apellido_m'),
+                data.get('matricula'), data.get('cuatrimestre'), data.get('motivo'),
+                data.get('fecha'), data.get('descripcion'), data.get('observaciones'),
+                data.get('seguimiento'), datetime.utcnow().isoformat()
+            ))
+            db.commit()
+            flash('Tutoría registrada correctamente.', 'success')
+            return redirect(url_for('consultas'))
+    
+    # Obtener lista de estudiantes para el select
+    estudiantes = db.execute("SELECT * FROM estudiantes ORDER BY apellido_p, apellido_m, nombre").fetchall()
+    return render_template('register_tutoria.html', nombre=session.get('nombre'), estudiantes=estudiantes)
 
 # ---------------------------
 # Registro de Tutorías Grupales
@@ -507,19 +578,22 @@ def dashboard_risk():
     carrera = request.args.get('carrera', '')
     cuatrimestre = request.args.get('cuatrimestre', '')
     busqueda = request.args.get('busqueda', '').strip().lower()
-    
-    # Obtener todos los estudiantes únicos
-    tutorias_todas = db.execute("SELECT DISTINCT nombre, apellido_p, apellido_m, matricula, cuatrimestre FROM tutoria").fetchall()
+        # Obtener todos los estudiantes registrados
+    estudiantes_todos = db.execute("SELECT * FROM estudiantes").fetchall()
     
     # Preparar datos para evaluación
     estudiantes_data = []
     
-    for tut in tutorias_todas:
+    for estudiante in estudiantes_todos:
         # Obtener todas las tutorías del estudiante
         tutorias_est = db.execute(
-            "SELECT * FROM tutoria WHERE nombre = ? AND apellido_p = ? AND apellido_m = ? ORDER BY fecha DESC",
-            (tut['nombre'], tut['apellido_p'], tut['apellido_m'])
+            "SELECT * FROM tutoria WHERE estudiante_id = ? ORDER BY fecha DESC",
+            (estudiante['id'],)
         ).fetchall()
+        
+        # Solo incluir estudiantes que tienen tutorías
+        if not tutorias_est:
+            continue
         
         # Contar inasistencias y bajas calificaciones
         inasistencias = sum(1 for t in tutorias_est if 'inasistencia' in t['motivo'].lower())
@@ -527,12 +601,13 @@ def dashboard_risk():
         
         student_info = {
             'info': {
-                'nombre': tut['nombre'],
-                'apellido_p': tut['apellido_p'],
-                'apellido_m': tut['apellido_m'],
-                'matricula': tut['matricula'],
-                'carrera': 'Ingeniería en Software',
-                'cuatrimestre': tut['cuatrimestre']
+                'nombre': estudiante['nombre'],
+                'apellido_p': estudiante['apellido_p'],
+                'apellido_m': estudiante['apellido_m'],
+                'matricula': estudiante['matricula'],
+                'carrera': estudiante['carrera'] or 'No especificada',
+                'cuatrimestre': estudiante['cuatrimestre_actual'],
+                'student_id': estudiante['id']
             },
             'tutorias': [dict(t) for t in tutorias_est],
             'inasistencias': inasistencias,
@@ -589,17 +664,17 @@ def student_history(student_id):
     """Muestra el historial académico completo de un estudiante"""
     db = get_db()
     
-    # Obtener información del estudiante
-    tutoria = db.execute("SELECT * FROM tutoria WHERE id = ?", (student_id,)).fetchone()
+    # Obtener información del estudiante desde la tabla estudiantes
+    estudiante = db.execute("SELECT * FROM estudiantes WHERE id = ?", (student_id,)).fetchone()
     
-    if not tutoria:
+    if not estudiante:
         flash("Estudiante no encontrado.", "error")
-        return redirect(url_for('consultas'))
+        return redirect(url_for('lista_estudiantes'))
     
     # Obtener todas las tutorías del estudiante
     tutorias = db.execute(
-        "SELECT * FROM tutoria WHERE nombre = ? AND apellido_p = ? AND apellido_m = ? ORDER BY fecha DESC",
-        (tutoria['nombre'], tutoria['apellido_p'], tutoria['apellido_m'])
+        "SELECT * FROM tutoria WHERE estudiante_id = ? ORDER BY fecha DESC",
+        (student_id,)
     ).fetchall()
     
     # Convertir a dicts
@@ -615,12 +690,12 @@ def student_history(student_id):
     
     # Información del estudiante
     student_info = {
-        'nombre': tutoria['nombre'],
-        'apellido_p': tutoria['apellido_p'],
-        'apellido_m': tutoria['apellido_m'],
-        'matricula': tutoria['matricula'],
-        'carrera': 'Ingeniería en Software',
-        'cuatrimestre': tutoria['cuatrimestre']
+        'nombre': estudiante['nombre'],
+        'apellido_p': estudiante['apellido_p'],
+        'apellido_m': estudiante['apellido_m'],
+        'matricula': estudiante['matricula'],
+        'carrera': estudiante['carrera'] or 'No especificada',
+        'cuatrimestre': estudiante['cuatrimestre_actual']
     }
     
     return render_template(
@@ -754,6 +829,192 @@ def report_period():
         return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
     
     return render_template('report_period.html', nombre=session.get('nombre'))
+
+# ---------------------------
+# Gestión de Estudiantes
+# ---------------------------
+@app.route('/estudiantes')
+@login_required
+def lista_estudiantes():
+    """Muestra la lista de todos los estudiantes registrados"""
+    db = get_db()
+    
+    # Filtros
+    busqueda = request.args.get('busqueda', '')
+    cuatrimestre = request.args.get('cuatrimestre', '')
+    
+    query = "SELECT * FROM estudiantes WHERE 1=1"
+    params = []
+    
+    if busqueda:
+        query += " AND (nombre LIKE ? OR apellido_p LIKE ? OR matricula LIKE ?)"
+        busqueda_param = f"%{busqueda}%"
+        params.extend([busqueda_param, busqueda_param, busqueda_param])
+    
+    if cuatrimestre:
+        query += " AND cuatrimestre_actual = ?"
+        params.append(cuatrimestre)
+    
+    query += " ORDER BY apellido_p, apellido_m, nombre"
+    
+    estudiantes = db.execute(query, params).fetchall()
+    
+    # Obtener cuatrimestres únicos para filtros
+    cuatrimestres = db.execute("SELECT DISTINCT cuatrimestre_actual FROM estudiantes WHERE cuatrimestre_actual IS NOT NULL ORDER BY cuatrimestre_actual").fetchall()
+    
+    return render_template(
+        'lista_estudiantes.html',
+        estudiantes=estudiantes,
+        cuatrimestres=[c['cuatrimestre_actual'] for c in cuatrimestres],
+        busqueda=busqueda,
+        cuatrimestre_filtro=cuatrimestre,
+        nombre=session.get('nombre')
+    )
+
+@app.route('/estudiantes/nuevo', methods=['GET', 'POST'])
+@login_required
+def nuevo_estudiante():
+    """Registra un nuevo estudiante"""
+    if request.method == 'POST':
+        data = request.form
+        db = get_db()
+        
+        # Validar que la matrícula no exista
+        existe = db.execute("SELECT id FROM estudiantes WHERE matricula = ?", (data.get('matricula'),)).fetchone()
+        
+        if existe:
+            flash(f"Ya existe un estudiante con la matrícula {data.get('matricula')}.", "error")
+            return redirect(url_for('nuevo_estudiante'))
+        
+        try:
+            db.execute(
+                '''
+                INSERT INTO estudiantes (matricula, nombre, apellido_p, apellido_m, cuatrimestre_actual, carrera, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''',
+                (
+                    data.get('matricula'),
+                    data.get('nombre'),
+                    data.get('apellido_p'),
+                    data.get('apellido_m'),
+                    data.get('cuatrimestre_actual'),
+                    data.get('carrera'),
+                    datetime.now().isoformat(),
+                    datetime.now().isoformat()
+                )
+            )
+            db.commit()
+            flash(f"Estudiante {data.get('nombre')} {data.get('apellido_p')} registrado exitosamente.", "success")
+            return redirect(url_for('lista_estudiantes'))
+        except Exception as e:
+            flash(f"Error al registrar estudiante: {str(e)}", "error")
+            return redirect(url_for('nuevo_estudiante'))
+    
+    return render_template('nuevo_estudiante.html', nombre=session.get('nombre'))
+
+@app.route('/estudiantes/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_estudiante(id):
+    """Edita un estudiante existente"""
+    db = get_db()
+    
+    if request.method == 'POST':
+        data = request.form
+        
+        try:
+            db.execute(
+                '''
+                UPDATE estudiantes
+                SET nombre=?, apellido_p=?, apellido_m=?, cuatrimestre_actual=?, carrera=?, updated_at=?
+                WHERE id=?
+                ''',
+                (
+                    data.get('nombre'),
+                    data.get('apellido_p'),
+                    data.get('apellido_m'),
+                    data.get('cuatrimestre_actual'),
+                    data.get('carrera'),
+                    datetime.now().isoformat(),
+                    id
+                )
+            )
+            db.commit()
+            flash("Estudiante actualizado exitosamente.", "success")
+            return redirect(url_for('lista_estudiantes'))
+        except Exception as e:
+            flash(f"Error al actualizar estudiante: {str(e)}", "error")
+    
+    estudiante = db.execute("SELECT * FROM estudiantes WHERE id = ?", (id,)).fetchone()
+    
+    if not estudiante:
+        flash("Estudiante no encontrado.", "error")
+        return redirect(url_for('lista_estudiantes'))
+    
+    return render_template('editar_estudiante.html', estudiante=estudiante, nombre=session.get('nombre'))
+
+@app.route('/estudiantes/eliminar/<int:id>', methods=['POST'])
+@login_required
+def eliminar_estudiante(id):
+    """Elimina un estudiante"""
+    db = get_db()
+    
+    # Verificar si el estudiante tiene tutorías asociadas
+    tutorias = db.execute("SELECT COUNT(*) as count FROM tutoria WHERE estudiante_id = ?", (id,)).fetchone()
+    
+    if tutorias and tutorias['count'] > 0:
+        flash(f"No se puede eliminar el estudiante porque tiene {tutorias['count']} tutoría(s) asociada(s).", "error")
+        return redirect(url_for('lista_estudiantes'))
+    
+    try:
+        db.execute("DELETE FROM estudiantes WHERE id = ?", (id,))
+        db.commit()
+        flash("Estudiante eliminado exitosamente.", "success")
+    except Exception as e:
+        flash(f"Error al eliminar estudiante: {str(e)}", "error")
+    
+    return redirect(url_for('lista_estudiantes'))
+
+@app.route('/estudiantes/perfil/<int:id>')
+@login_required
+def perfil_estudiante(id):
+    """Muestra el perfil completo de un estudiante"""
+    db = get_db()
+    
+    estudiante = db.execute("SELECT * FROM estudiantes WHERE id = ?", (id,)).fetchone()
+    
+    if not estudiante:
+        flash("Estudiante no encontrado.", "error")
+        return redirect(url_for('lista_estudiantes'))
+    
+    # Obtener todas las tutorías del estudiante
+    tutorias = db.execute(
+        "SELECT * FROM tutoria WHERE estudiante_id = ? ORDER BY fecha DESC",
+        (id,)
+    ).fetchall()
+    
+    # Analizar historial
+    if tutorias:
+        analyzer = AcademicHistoryAnalyzer()
+        tutorias_data = [dict(t) for t in tutorias]
+        analisis = analyzer.generar_analisis_completo(tutorias_data)
+        
+        # Obtener datos para gráficos
+        datos_frecuencia = analyzer.obtener_datos_grafico_frecuencia(analisis['por_cuatrimestre'])
+        datos_motivos = analyzer.obtener_datos_grafico_motivos(analisis['motivos_generales'])
+    else:
+        analisis = None
+        datos_frecuencia = None
+        datos_motivos = None
+    
+    return render_template(
+        'perfil_estudiante.html',
+        estudiante=estudiante,
+        tutorias=tutorias,
+        analisis=analisis,
+        datos_frecuencia=datos_frecuencia,
+        datos_motivos=datos_motivos,
+        nombre=session.get('nombre')
+    )
 
 # ---------------------------
 # Ejecutar la app

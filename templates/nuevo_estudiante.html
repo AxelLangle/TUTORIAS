@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Registrar Estudiante{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:center; margin-top:40px;">
+    <form method="post" class="form-container">
+
+        <!-- Título dentro del contenedor -->
+        <h2 style="text-align:center; color:#cc1313; margin-bottom:25px; font-size:2rem;">Registrar Nuevo Estudiante</h2>
+
+        <label>Matrícula:
+            <input name="matricula" type="text" required placeholder="1323148541" pattern="\d+" title="Solo números">
+        </label>
+        
+        <label>Nombre:
+            <input name="nombre" required placeholder="Juan">
+        </label>
+        
+        <label>Apellido Paterno:
+            <input name="apellido_p" required placeholder="Pérez">
+        </label>
+        
+        <label>Apellido Materno:
+            <input name="apellido_m" placeholder="Gómez">
+        </label>
+        
+        <label>Cuatrimestre Actual (Período: {{ periodo_actual }}):
+            <select name="cuatrimestre_actual" required>
+                <option value="">Seleccione...</option>
+                {% for cuatri in cuatrimestres_disponibles %}
+                <option value="{{ cuatri }}">{{ cuatri }}°</option>
+                {% endfor %}
+            </select>
+        </label>
+        
+        <label>Carrera:
+            <select name="carrera" required>
+                <option value="">Seleccione...</option>
+                <option value="Ingeniería en Software">Ingeniería en Software</option>
+                <option value="Ingeniería en Sistemas">Ingeniería en Sistemas</option>
+                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+                <option value="Administración">Administración</option>
+                <option value="Contaduría">Contaduría</option>
+            </select>
+        </label>
+        
+        <div class="button-container">
+            <button type="submit">Guardar</button>
+            <a href="{{ url_for('lista_estudiantes') }}" class="btn-cancel">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.form-container {
+    width: 100%;
+    max-width: 700px;
+    padding: 30px 35px;
+    background: #fff;
+    border-left: 8px solid #cc1313;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    display: grid;
+    gap: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.form-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.form-container label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+}
+
+.form-container input,
+.form-container select {
+    margin-top: 8px;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+}
+
+.form-container input:focus,
+.form-container select:focus {
+    outline: none;
+    border-color: #cc1313;
+}
+
+.button-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.form-container button {
+    background: linear-gradient(135deg, #cc1313, #a00f0f);
+    color: white;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.form-container button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(204, 19, 19, 0.3);
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+    padding: 14px 40px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 700;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+    transform: translateY(-3px);
+}
+</style>
+{% endblock %}

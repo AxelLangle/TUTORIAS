@@ -14,8 +14,13 @@
         <label>Carrera:
             <input name="carrera" placeholder="Ingeniería en Sistemas">
         </label>
-        <label>Cuatrimestre:
-            <input name="cuatrimestre" placeholder="3°">
+        <label>Cuatrimestre (Período: {{ periodo_actual }}):
+            <select name="cuatrimestre">
+                <option value="">Seleccione...</option>
+                {% for cuatri in cuatrimestres_disponibles %}
+                <option value="{{ cuatri }}">{{ cuatri }}°</option>
+                {% endfor %}
+            </select>
         </label>
         <label>Motivo:
             <input name="motivo" placeholder="Motivo de la tutoría">

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Editar Estudiante{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:center; margin-top:40px;">
+    <form method="post" class="form-container">
+
+        <!-- Título dentro del contenedor -->
+        <h2 style="text-align:center; color:#cc1313; margin-bottom:25px; font-size:2rem;">Editar Estudiante</h2>
+
+        <label>Matrícula:
+            <input name="matricula" type="text" value="{{ estudiante['matricula'] }}" disabled style="background:#f5f5f5;">
+            <small style="color:#666; margin-top:5px;">La matrícula no se puede modificar</small>
+        </label>
+        
+        <label>Nombre:
+            <input name="nombre" required value="{{ estudiante['nombre'] }}">
+        </label>
+        
+        <label>Apellido Paterno:
+            <input name="apellido_p" required value="{{ estudiante['apellido_p'] }}">
+        </label>
+        
+        <label>Apellido Materno:
+            <input name="apellido_m" value="{{ estudiante['apellido_m'] or '' }}">
+        </label>
+        
+        <label>Cuatrimestre Actual (Período: {{ periodo_actual }}):
+            <select name="cuatrimestre_actual" required>
+                <option value="">Seleccione...</option>
+                {% for cuatri in cuatrimestres_disponibles %}
+                <option value="{{ cuatri }}" {% if estudiante['cuatrimestre_actual'] == cuatri %}selected{% endif %}>{{ cuatri }}°</option>
+                {% endfor %}
+            </select>
+        </label>
+        
+        <label>Carrera:
+            <select name="carrera" required>
+                <option value="">Seleccione...</option>
+                <option value="Ingeniería en Software" {% if estudiante['carrera'] == 'Ingeniería en Software' %}selected{% endif %}>Ingeniería en Software</option>
+                <option value="Ingeniería en Sistemas" {% if estudiante['carrera'] == 'Ingeniería en Sistemas' %}selected{% endif %}>Ingeniería en Sistemas</option>
+                <option value="Ingeniería Industrial" {% if estudiante['carrera'] == 'Ingeniería Industrial' %}selected{% endif %}>Ingeniería Industrial</option>
+                <option value="Administración" {% if estudiante['carrera'] == 'Administración' %}selected{% endif %}>Administración</option>
+                <option value="Contaduría" {% if estudiante['carrera'] == 'Contaduría' %}selected{% endif %}>Contaduría</option>
+            </select>
+        </label>
+        
+        <div class="button-container">
+            <button type="submit">Actualizar</button>
+            <a href="{{ url_for('lista_estudiantes') }}" class="btn-cancel">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.form-container {
+    width: 100%;
+    max-width: 700px;
+    padding: 30px 35px;
+    background: #fff;
+    border-left: 8px solid #cc1313;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    display: grid;
+    gap: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.form-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.form-container label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+}
+
+.form-container input,
+.form-container select {
+    margin-top: 8px;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+}
+
+.form-container input:focus,
+.form-container select:focus {
+    outline: none;
+    border-color: #cc1313;
+}
+
+.button-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.form-container button {
+    background: linear-gradient(135deg, #cc1313, #a00f0f);
+    color: white;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.form-container button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(204, 19, 19, 0.3);
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+    padding: 14px 40px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 700;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+    transform: translateY(-3px);
+}
+</style>
+{% endblock %}
