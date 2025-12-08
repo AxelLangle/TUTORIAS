@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Editar Tutoría{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Editar Tutoría</h2>
+
+    <form method="post" class="edit-form">
+        <label>Nombre:</label>
+        <input type="text" name="nombre" value="{{ tutoria['nombre'] }}" required>
+
+        <label>Apellido Paterno:</label>
+        <input type="text" name="apellido_p" value="{{ tutoria['apellido_p'] }}">
+
+        <label>Apellido Materno:</label>
+        <input type="text" name="apellido_m" value="{{ tutoria['apellido_m'] }}">
+
+        <label>Matrícula:</label>
+        <input type="text" name="matricula" value="{{ tutoria['matricula'] }}">
+
+        <label>Cuatrimestre:</label>
+        <input type="text" name="cuatrimestre" value="{{ tutoria['cuatrimestre'] }}">
+
+        <label>Motivo:</label>
+        <input type="text" name="motivo" value="{{ tutoria['motivo'] }}">
+
+        <label>Fecha:</label>
+        <input type="date" name="fecha" value="{{ tutoria['fecha'] }}">
+
+        <label>Descripción:</label>
+        <textarea name="descripcion">{{ tutoria['descripcion'] }}</textarea>
+
+        <label>Observaciones:</label>
+        <textarea name="observaciones">{{ tutoria['observaciones'] }}</textarea>
+
+        <label>Seguimiento:</label>
+        <textarea name="seguimiento">{{ tutoria['seguimiento'] }}</textarea>
+
+        <button type="submit">Guardar Cambios</button>
+        <a href="{{ url_for('consultas') }}" class="btn-cancelar">Cancelar</a>
+    </form>
+</div>
+
+<style>
+.container { max-width: 700px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px #cc1313; }
+form { display: flex; flex-direction: column; gap: 12px; }
+input, textarea, button, a { padding: 10px; border-radius: 6px; }
+button { background: #4d0404; color: #fff; border: none; cursor: pointer; }
+.btn-cancelar { background: #999; text-decoration: none; text-align: center; color: #fff; }
+button:hover { background: #cc1313; }
+</style>
+{% endblock %}

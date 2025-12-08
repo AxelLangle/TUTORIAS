@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block title %}Consultas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Consultas</h2>
+
+    <!-- Filtro -->
+    <form method="get" class="filter-form">
+     <label>Tipo: 
+        <select name="tipo">
+            <option value="todos" {% if tipo == 'todos' %}selected{% endif %}>Todos</option>
+            <option value="asesoria" {% if tipo == 'asesoria' %}selected{% endif %}>Asesorías</option>
+            <option value="tutoria" {% if tipo == 'tutoria' %}selected{% endif %}>Tutorías Individuales</option>
+            <option value="tutoria_grupal" {% if tipo == 'tutoria_grupal' %}selected{% endif %}>Tutorías Grupales</option>
+        </select>
+     </label>
+
+     <label>Buscar:
+        <input type="text" name="busqueda" value="{{ busqueda or '' }}" placeholder="Nombre o grupo(2725IS)">
+     </label>
+
+     <button type="submit">Filtrar</button>
+    </form>
+
+
+    <!-- Asesorías -->
+    {% if asesorias %}
+    <div class="card">
+        <h3>Asesorías</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Matrícula</th>
+                    <th>Parcial</th>
+                    <th>Tema</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for a in asesorias %}
+                <tr>
+                    <td>{{ a['nombre'] }} {{ a['apellido_p'] }} {{ a['apellido_m'] }}</td>
+                    <td>{{ a['unidad'] }}</td>
+                    <td>{{ a['parcial'] }}</td>
+                    <td>{{ a['tema'] }}</td>
+                    <td>{{ a['fecha'] }}</td>
+                    <td>
+                        <form action="{{ url_for('eliminar_asesoria', id=a['id']) }}" method="post" style="display:inline;">
+                            <button type="submit" onclick="return confirm('¿Eliminar esta asesoría?')">🗑</button>
+                         </form>
+                        <a href="{{ url_for('editar_asesoria', id=a['id']) }}">✏️</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Tutorías individuales -->
+    {% if tutorias %}
+    <div class="card">
+        <h3>Tutorías Individuales</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Matrícula</th>
+                    <th>Cuatrimestre</th>
+                    <th>Motivo</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for t in tutorias %}
+                <tr>
+                    <td>{{ t['nombre'] }} {{ t['apellido_p'] }} {{ t['apellido_m'] }}</td>
+                    <td>{{ t['matricula'] }}</td>
+                    <td>{{ t['cuatrimestre'] }}</td>
+                    <td>{{ t['motivo'] }}</td>
+                    <td>{{ t['fecha'] }}</td>
+                    <td>
+                        <form action="{{ url_for('eliminar_tutoria', id=t['id']) }}" method="post" style="display:inline;">
+                            <button type="submit" onclick="return confirm('¿Eliminar esta tutoría?')">🗑</button>
+                        </form>
+                        <a href="{{ url_for('editar_tutoria', id=t['id']) }}">✏️</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Tutorías grupales -->
+    {% if tutorias_grupales %}
+    <div class="card">
+        <h3>Tutorías Grupales</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Grupo</th>
+                    <th>Carrera</th>
+                    <th>Cuatrimestre</th>
+                    <th>Motivo</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for tg in tutorias_grupales %}
+                <tr>
+                    <td>{{ tg['grupo_nombre'] }}</td>
+                    <td>{{ tg['carrera'] }}</td>
+                    <td>{{ tg['cuatrimestre'] }}</td>
+                    <td>{{ tg['motivo'] }}</td>
+                    <td>{{ tg['fecha'] }}</td>
+                    <td>
+                        <!-- Botón Eliminar -->
+                     <form action="{{ url_for('eliminar_tutoria_grupal', id=tg['id']) }}" method="post" style="display:inline;">
+                            <button type="submit" onclick="return confirm('¿Eliminar esta tutoría grupal?')">🗑</button>
+                     </form>
+
+        <!-- Botón Editar -->
+                     <a href="{{ url_for('editar_tutoria_grupal', id=tg['id']) }}" style="margin-left:5px;">✏️</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Contenedor principal */
+.container {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Tarjetas tipo panel */
+.card {
+    background: #fff;
+    padding: 20px 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgb(65, 23, 23);
+}
+
+/* Títulos */
+.card h3, h2 {
+    margin-bottom: 15px;
+    color: #cc1313;
+}
+
+/* Formulario de filtro */
+.filter-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter-form select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #cc1313;
+}
+
+.filter-form button {
+    padding: 6px 15px;
+    background: #4d0404;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.filter-form button:hover {
+    background: #cc1313;
+}
+
+/* Botón eliminar */
+.delete-btn {
+    background: #a10b0b;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.delete-btn:hover {
+    background: #e61919;
+}
+
+/* Tablas */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+table th, table td {
+    padding: 10px 12px;
+    border: 1px solid #cc1313;
+    text-align: left;
+}
+
+table thead {
+    background: #cc1313;
+    color: rgb(136, 11, 11);
+}
+
+table tbody tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+/* Scroll horizontal para móviles */
+@media (max-width: 900px) {
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+</style>
+{% endblock %}
+

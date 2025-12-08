@@ -1,0 +1,105 @@
+<div style="display:flex; justify-content:center; margin-top:50px;">
+    <form method="post" class="form-container">
+
+        <!-- Título dentro del contenedor -->
+        <h2 style="text-align:center; color:#8B004B; margin-bottom:25px; font-size:2rem;">📝 Registrar Usuario</h2>
+
+        <label>Nombre completo:
+            <input type="text" name="nombre" required placeholder="Juan Pérez">
+        </label>
+
+        <label>Usuario (correo institucional):
+          <input type="email" name="usuario" required placeholder="usuario@uptecamac.edu.mx"
+           pattern="^[a-zA-Z0-9._%+-]+@uptecamac\.edu\.mx$"
+           title="Ingresa un correo válido de la Universidad Politécnica de Tecámac (@uptecamac.edu.mx)">
+        </label>
+        
+        <label>Contraseña:
+            <input type="password" name="password" required placeholder="********">
+        </label>
+
+        <div class="button-container">
+            <button type="submit">Registrar</button>
+        </div>
+
+        <p style="text-align:center; margin-top:15px; font-size:0.95rem;">
+            ¿Ya tienes cuenta?
+            <a href="{{ url_for('login') }}" style="color:#8B004B; font-weight:600; text-decoration:none;">Inicia sesión</a>
+        </p>
+    </form>
+</div>
+
+<style>
+.form-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 30px 25px;
+    background: #e0acac;
+    border-left: 8px solid #cc1313;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    display: grid;
+    gap: 18px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.form-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.form-container label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.form-container input {
+    margin-top: 6px;
+    padding: 12px 14px;
+    border: 1px solid #cc1313;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.form-container input:focus {
+    border-color: #cc1313;
+    box-shadow: 0 0 6px rgba(228, 29, 29, 0.35);
+    outline: none;
+}
+
+.button-container {
+    text-align: center;
+}
+
+.form-container button {
+    padding: 14px 28px;
+    background: #cc1313;
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+}
+
+.form-container button:hover {
+    background: #cc1313;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #F8F8F8, #F8F8F8); /* 👈 elegante degradado */
+    font-family: "Segoe UI", sans-serif;
+}
+</style>

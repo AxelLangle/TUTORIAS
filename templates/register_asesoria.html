@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Registrar Asesoría{% endblock %}
+{% block content %}
+
+<div style="display:flex; justify-content:center; margin-top:40px;">
+    <form method="post" class="form-container">
+  <h2 style="text-align:center; color:#cc1313; margin-bottom:25px; font-size:2rem;">Registrar Asesoría</h2>
+    <label>Nombre:
+      <input type="text" name="nombre" required>
+    </label>
+    <label>Apellido Paterno:
+      <input type="text" name="apellido_p" required>
+    </label>
+    <label>Apellido Materno:
+      <input type="text" name="apellido_m" required>
+    </label>
+    <label>Unidad:
+      <input type="text" name="unidad" required>
+    </label>
+    <label>Parcial:
+      <input type="number" name="parcial" min="1" step="1" required>
+    </label>
+    <label>Tema:
+      <input type="text" name="tema" required>
+    </label>
+    <label>Fecha:
+      <input type="date" name="fecha" required>
+    </label>
+    <button type="submit">Registrar</button>
+  </form>
+</div>
+
+
+
+
+<style>
+.form-container {
+    width: 100%;
+    max-width: 700px;
+    padding: 30px 35px;
+    background: #fff;
+    border-left: 8px solid #cc1313;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    display: grid;
+    gap: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.form-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.form-container label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.form-container input,
+.form-container textarea {
+    margin-top: 6px;
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border 0.2s, box-shadow 0.2s;
+    resize: vertical;
+}
+
+.form-container input:focus,
+.form-container textarea:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.35);
+    outline: none;
+}
+
+.button-container {
+    text-align: center;
+}
+
+.form-container button {
+    padding: 14px 28px;
+    background: #4d0404;
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+}
+
+.form-container button:hover {
+    background: #cc1313;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.form-container textarea {
+    min-height: 70px;
+}
+</style>
+<script>
+  // Evitar seleccionar fechas anteriores a hoy
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
+
+  document.querySelector('input[name="fecha"]').setAttribute('min', formattedDate);
+</script>
+
+{% endblock %}
+
+

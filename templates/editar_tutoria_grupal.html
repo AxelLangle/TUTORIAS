@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Editar Tutoría Grupal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Editar Tutoría Grupal</h2>
+    <form method="post">
+        <label>Grupo:</label>
+        <input type="text" name="grupo_nombre" value="{{ tutoria['grupo_nombre'] }}" required>
+
+        <label>Carrera:</label>
+        <input type="text" name="carrera" value="{{ tutoria['carrera'] }}" required>
+
+        <label>Cuatrimestre:</label>
+        <input type="text" name="cuatrimestre" value="{{ tutoria['cuatrimestre'] }}" required>
+
+        <label>Motivo:</label>
+        <input type="text" name="motivo" value="{{ tutoria['motivo'] }}" required>
+
+        <label>Fecha:</label>
+        <input type="date" name="fecha" value="{{ tutoria['fecha'] }}" required>
+
+        <button type="submit">Guardar Cambios</button>
+        <a href="{{ url_for('consultas') }}" class="cancel-btn">Cancelar</a>
+    </form>
+</div>
+
+<style>
+.container {
+    max-width: 700px;
+    margin: 30px auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+h2 {
+    color: #cc1313;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #cc1313;
+}
+
+button {
+    background-color: #4d0404;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #cc1313;
+}
+
+.cancel-btn {
+    text-decoration: none;
+    background: #999;
+    color: white;
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    display: inline-block;
+    margin-top: 5px;
+}
+</style>
+{% endblock %}

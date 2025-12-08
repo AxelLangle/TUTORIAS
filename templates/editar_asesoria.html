@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Editar Asesoría{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Editar Asesoría</h2>
+
+    <form method="post" class="edit-form">
+        <label>Nombre:</label>
+        <input type="text" name="nombre" value="{{ asesoria['nombre'] }}" required>
+
+        <label>Apellido Paterno:</label>
+        <input type="text" name="apellido_p" value="{{ asesoria['apellido_p'] }}">
+
+        <label>Apellido Materno:</label>
+        <input type="text" name="apellido_m" value="{{ asesoria['apellido_m'] }}">
+
+        <label>Unidad:</label>
+        <input type="text" name="unidad" value="{{ asesoria['unidad'] }}">
+
+        <label>Parcial:</label>
+        <input type="text" name="parcial" value="{{ asesoria['parcial'] }}">
+
+        <label>Periodo:</label>
+        <input type="text" name="periodo" value="{{ asesoria['periodo'] }}">
+
+        <label>Tema:</label>
+        <input type="text" name="tema" value="{{ asesoria['tema'] }}">
+
+        <label>Fecha:</label>
+        <input type="date" name="fecha" value="{{ asesoria['fecha'] }}">
+
+        <button type="submit">Guardar Cambios</button>
+        <a href="{{ url_for('consultas') }}" class="btn-cancelar">Cancelar</a>
+    </form>
+</div>
+
+<style>
+.container { max-width: 600px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px #cc1313; }
+form { display: flex; flex-direction: column; gap: 12px; }
+input, button, a { padding: 10px; border-radius: 6px; }
+button { background: #4d0404; color: #fff; border: none; cursor: pointer; }
+.btn-cancelar { background: #999; text-decoration: none; text-align: center; color: #fff; }
+button:hover { background: #cc1313; }
+</style>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<main>
+    <!-- Tarjetas de totales -->
+    <div class="card total-card">
+        <h2>📝 Total Asesorías</h2>
+        <p>{{ total_asesorias }}</p>
+    </div>
+
+    <div class="card total-card">
+        <h2>📚 Total Tutorías</h2>
+        <p>{{ total_tutorias }}</p>
+    </div>
+
+    <div class="card total-card">
+        <h2>👥 Tutorías Grupales</h2>
+        <p>{{ total_grupales }}</p>
+    </div>
+
+<!-- Chart.js -->
+<div class="card chart-card">
+    <h2>Registros por mes</h2>
+    <canvas id="chartRegistros"></canvas>
+</div>
+
+    {% if nombre %}
+        <div class="user-info">
+            Bienvenido, {{ nombre }} | <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+        </div>
+    {% endif %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('chartRegistros').getContext('2d');
+
+const meses = {{ meses|tojson | safe }} || [];
+const asesorias = {{ cantidades_asesorias|tojson | safe }} || [];
+const tutorias = {{ cantidades_tutorias|tojson | safe }} || [];
+const grupales = {{ cantidades_grupales|tojson | safe }} || [];
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: meses,
+        datasets: [
+            {
+                label: 'Asesorías',
+                data: asesorias,
+                backgroundColor: '#4CAF50',
+                borderRadius: 6,
+                barThickness: 25
+            },
+            {
+                label: 'Tutorías Individuales',
+                data: tutorias,
+                backgroundColor: '#2196F3',
+                borderRadius: 6,
+                barThickness: 25
+            },
+            {
+                label: 'Tutorías Grupales',
+                data: grupales,
+                backgroundColor: '#FF9800',
+                borderRadius: 6,
+                barThickness: 25
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            x: { stacked: false }
+        }
+    }
+});
+</script>
+
+<style>
+main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    padding: 20px;
+}
+
+/* Tarjetas generales */
+.card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 6px 18px rgb(68, 33, 33);
+    transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 25px rgb(221, 19, 19);
+}
+
+.card h2 {
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    color: #cc1313;
+}
+
+.card p {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #cc1313;
+}
+
+/* Tarjeta de gráfica */
+.chart-card canvas {
+    width: 100% !important;
+    height: 250px !important;
+}
+
+/* Tarjeta de atajos */
+.shortcuts-card .quick-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.quick-btn {
+    padding: 12px 18px;
+    background: #cc1313;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+}
+
+.quick-btn:hover {
+    background: #cc1313;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgb(206, 31, 31);
+}
+
+/* Responsivo para móviles */
+@media (max-width: 600px) {
+    .card p {
+        font-size: 1.5rem;
+    }
+    .quick-btn {
+        flex: 1 1 100%;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
+
+
+
+
