@@ -6,7 +6,7 @@ from functools import wraps
 from pdf_generator import PDFReportGenerator
 from academic_history import AcademicHistoryAnalyzer
 from risk_assessment import RiskAssessmentEngine
-from utils import obtener_cuatrimestres_disponibles, obtener_nombre_periodo, validar_cuatrimestre
+from utils import obtener_cuatrimestres_disponibles, obtener_nombre_periodo, validar_cuatrimestre, obtener_grupos_disponibles, obtener_carreras_por_programa, decodificar_grupo, PROGRAMA_EDUCATIVO_1, PROGRAMA_EDUCATIVO_2
 
 DATABASE = 'asesorias.db'
 app = Flask(__name__)
@@ -889,8 +889,8 @@ def nuevo_estudiante():
         try:
             db.execute(
                 '''
-                INSERT INTO estudiantes (matricula, nombre, apellido_p, apellido_m, cuatrimestre_actual, carrera, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO estudiantes (matricula, nombre, apellido_p, apellido_m, cuatrimestre_actual, carrera, grupo, programa_educativo, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''',
                 (
                     data.get('matricula'),
@@ -899,6 +899,8 @@ def nuevo_estudiante():
                     data.get('apellido_m'),
                     data.get('cuatrimestre_actual'),
                     data.get('carrera'),
+                    data.get('grupo'),
+                    int(data.get('programa_educativo', 2)),
                     datetime.now().isoformat(),
                     datetime.now().isoformat()
                 )

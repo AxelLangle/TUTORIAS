@@ -53,3 +53,77 @@ def validar_cuatrimestre(cuatrimestre):
     """
     cuatrimestres_disponibles = obtener_cuatrimestres_disponibles()
     return str(cuatrimestre) in cuatrimestres_disponibles
+
+
+# --- Lógica de Programas Educativos y Grupos ---
+
+PROGRAMA_EDUCATIVO_1 = {
+    "IS": "Ingeniería en Software",
+    "IMA": "Ingeniería en Mecánica Automotriz",
+    "IF": "Ingeniería Financiera",
+    "ITM": "Ingeniería en Tecnologías de Manufactura",
+    "LNI": "Licenciatura en Negocios Internacionales"
+}
+
+PROGRAMA_EDUCATIVO_2 = {
+    "ITII": "Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital",
+    "IMA": "Licenciatura en Ingeniería en Mecánica Automotriz",
+    "IF": "Licenciatura en Ingeniería Financiera",
+    "IMAV": "Licenciatura en Ingeniería en Manufactura Avanzadas",
+    "LCIA": "Licenciatura en Comercio Internacional y Aduanas"
+}
+
+def obtener_carreras_por_programa(programa_id):
+    """Obtiene las carreras de un programa educativo"""
+    if programa_id == 1:
+        return PROGRAMA_EDUCATIVO_1
+    elif programa_id == 2:
+        return PROGRAMA_EDUCATIVO_2
+    return {}
+
+def obtener_grupos_disponibles(cuatrimestre, programa_id):
+    """
+    Genera los grupos disponibles para un cuatrimestre y programa educativo.
+    
+    Lógica de ID de Grupo: [Grupo][Cuatrimestre][Año][Carrera]
+    Ejemplo: 5725IS -> Grupo 5, Cuatrimestre 7, Año 2025, Carrera IS
+    """
+    if not cuatrimestre or not programa_id:
+        return []
+    
+    año_actual = str(datetime.now().year)[-2:]  # Últimos 2 dígitos del año
+    carreras = obtener_carreras_por_programa(programa_id)
+    grupos_disponibles = []
+    
+    # Generar de 1 a 5 grupos por carrera
+    for i in range(1, 6):
+        for sigla in carreras.keys():
+            grupo_id = f"{i}{cuatrimestre}{año_actual}{sigla}"
+            grupos_disponibles.append(grupo_id)
+            
+    return grupos_disponibles
+
+def decodificar_grupo(grupo_id):
+    """
+    Decodifica un ID de grupo para obtener sus componentes.
+    
+    Returns:
+        dict: Diccionario con grupo, cuatrimestre, año y carrera, o None si el formato es incorrecto.
+    """
+    if not grupo_id or len(grupo_id) < 5:
+        return None
+    
+    try:
+        grupo = grupo_id[0]
+        cuatrimestre = grupo_id[1]
+        año = f"20{grupo_id[2:4]}"
+        carrera_sigla = grupo_id[4:]
+        
+        return {
+            "grupo": grupo,
+            "cuatrimestre": cuatrimestre,
+            "año": año,
+            "carrera_sigla": carrera_sigla
+        }
+    except Exception:
+        return None

@@ -24,8 +24,16 @@
             <input name="apellido_m" placeholder="Gómez">
         </label>
         
+        <label>Programa Educativo:
+            <select id="programa_educativo" name="programa_educativo" required onchange="updateCarreras()">
+                <option value="">Seleccione...</option>
+                <option value="1">Programa Educativo 1 (7° y 10°)</option>
+                <option value="2" selected>Programa Educativo 2 (1° y 4°)</option>
+            </select>
+        </label>
+        
         <label>Cuatrimestre Actual (Período: {{ periodo_actual }}):
-            <select name="cuatrimestre_actual" required>
+            <select id="cuatrimestre_actual" name="cuatrimestre_actual" required onchange="updateGrupos()">
                 <option value="">Seleccione...</option>
                 {% for cuatri in cuatrimestres_disponibles %}
                 <option value="{{ cuatri }}">{{ cuatri }}°</option>
@@ -34,13 +42,14 @@
         </label>
         
         <label>Carrera:
-            <select name="carrera" required>
-                <option value="">Seleccione...</option>
-                <option value="Ingeniería en Software">Ingeniería en Software</option>
-                <option value="Ingeniería en Sistemas">Ingeniería en Sistemas</option>
-                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                <option value="Administración">Administración</option>
-                <option value="Contaduría">Contaduría</option>
+            <select id="carrera" name="carrera" required onchange="updateGrupos()">
+                <option value="">Seleccione programa educativo primero...</option>
+            </select>
+        </label>
+        
+        <label>Grupo:
+            <select id="grupo" name="grupo" required>
+                <option value="">Seleccione cuatrimestre y carrera primero...</option>
             </select>
         </label>
         
@@ -135,4 +144,71 @@
     transform: translateY(-3px);
 }
 </style>
+
+<script>
+const PROGRAMA_1 = {
+    "IS": "Ingeniería en Software",
+    "IMA": "Ingeniería en Mecánica Automotriz",
+    "IF": "Ingeniería Financiera",
+    "ITM": "Ingeniería en Tecnologías de Manufactura",
+    "LNI": "Licenciatura en Negocios Internacionales"
+};
+
+const PROGRAMA_2 = {
+    "ITII": "Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital",
+    "IMA": "Licenciatura en Ingeniería en Mecánica Automotriz",
+    "IF": "Licenciatura en Ingeniería Financiera",
+    "IMAV": "Licenciatura en Ingeniería en Manufactura Avanzadas",
+    "LCIA": "Licenciatura en Comercio Internacional y Aduanas"
+};
+
+function updateCarreras() {
+    const programaSelect = document.getElementById('programa_educativo');
+    const carreraSelect = document.getElementById('carrera');
+    const programa = programaSelect.value;
+    
+    carreraSelect.innerHTML = '<option value="">Seleccione...</option>';
+    
+    const carreras = programa === '1' ? PROGRAMA_1 : (programa === '2' ? PROGRAMA_2 : {});
+    
+    for (const [sigla, nombre] of Object.entries(carreras)) {
+        const option = document.createElement('option');
+        option.value = sigla;
+        option.textContent = nombre;
+        carreraSelect.appendChild(option);
+    }
+    
+    updateGrupos();
+}
+
+function updateGrupos() {
+    const cuatrimestreSelect = document.getElementById('cuatrimestre_actual');
+    const carreraSelect = document.getElementById('carrera');
+    const grupoSelect = document.getElementById('grupo');
+    
+    const cuatrimestre = cuatrimestreSelect.value;
+    const carreraSigla = carreraSelect.value;
+    
+    grupoSelect.innerHTML = '<option value="">Seleccione...</option>';
+    
+    if (!cuatrimestre || !carreraSigla) {
+        return;
+    }
+    
+    const añoActual = new Date().getFullYear().toString().slice(-2);
+    
+    for (let i = 1; i <= 5; i++) {
+        const grupoId = `${i}${cuatrimestre}${añoActual}${carreraSigla}`;
+        const option = document.createElement('option');
+        option.value = grupoId;
+        option.textContent = grupoId;
+        grupoSelect.appendChild(option);
+    }
+}
+
+// Inicializar al cargar
+window.onload = function() {
+    updateCarreras();
+};
+</script>
 {% endblock %}
