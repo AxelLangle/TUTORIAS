@@ -42,6 +42,63 @@ class RiskAssessmentEngine:
     def __init__(self):
         pass
     
+    def calcular_desglose_puntuacion(self, tutorias, inasistencias=0, bajas_calificaciones=0):
+        """
+        Calcula el desglose detallado de la puntuación de riesgo
+        
+        Returns:
+            dict: Desglose con puntuación por indicador
+        """
+        desglose = {
+            'motivos': 0,
+            'frecuencia': 0,
+            'inasistencias': 0,
+            'bajas_calificaciones': 0,
+            'total': 0
+        }
+        
+        # 1. Puntuación por motivos
+        for tutoria in tutorias:
+            motivo = tutoria.get('motivo', '').lower()
+            for key, peso in self.MOTIVO_PESOS.items():
+                if key in motivo:
+                    desglose['motivos'] += peso
+                    break
+            else:
+                desglose['motivos'] += 1
+        
+        # 2. Puntuación por frecuencia
+        num_tutorias = len(tutorias)
+        if num_tutorias >= 7:
+            desglose['frecuencia'] = 8
+        elif num_tutorias >= 5:
+            desglose['frecuencia'] = 6
+        elif num_tutorias >= 3:
+            desglose['frecuencia'] = 3
+        elif num_tutorias >= 1:
+            desglose['frecuencia'] = 1
+        
+        # 3. Puntuación por inasistencias
+        if inasistencias >= 3:
+            desglose['inasistencias'] = 6
+        elif inasistencias >= 2:
+            desglose['inasistencias'] = 4
+        elif inasistencias >= 1:
+            desglose['inasistencias'] = 2
+        
+        # 4. Puntuación por bajas calificaciones
+        if bajas_calificaciones >= 3:
+            desglose['bajas_calificaciones'] = 6
+        elif bajas_calificaciones >= 2:
+            desglose['bajas_calificaciones'] = 4
+        elif bajas_calificaciones >= 1:
+            desglose['bajas_calificaciones'] = 2
+        
+        desglose['total'] = sum([desglose['motivos'], desglose['frecuencia'], 
+                                desglose['inasistencias'], desglose['bajas_calificaciones']])
+        
+        return desglose
+    
     def calcular_puntuacion_riesgo(self, tutorias, inasistencias=0, bajas_calificaciones=0):
         """
         Calcula la puntuación de riesgo de un estudiante
@@ -186,6 +243,9 @@ class RiskAssessmentEngine:
         # Calcular puntuación
         detalles_puntuacion = self.calcular_puntuacion_riesgo(tutorias, inasistencias, bajas_calificaciones)
         
+        # Calcular desglose de puntuación
+        desglose = self.calcular_desglose_puntuacion(tutorias, inasistencias, bajas_calificaciones)
+        
         # Clasificar riesgo
         clasificacion = self.clasificar_riesgo(detalles_puntuacion['total'])
         
@@ -202,6 +262,7 @@ class RiskAssessmentEngine:
             'cuatrimestre': student_data.get('cuatrimestre', 'N/A'),
             'puntuacion': detalles_puntuacion['total'],
             'detalles_puntuacion': detalles_puntuacion,
+            'desglose_puntuacion': desglose,
             'clasificacion': clasificacion,
             'motivos_frecuentes': motivos_principales,
             'num_tutorias': len(tutorias),

@@ -254,9 +254,10 @@ def index():
 @app.route('/register/asesoria', methods=['GET', 'POST'])
 @login_required
 def register_asesoria():
+    db = get_db()
+    
     if request.method == 'POST':
         data = request.form
-        db = get_db()
         db.execute('''
             INSERT INTO asesoria (nombre, apellido_p, apellido_m, unidad, parcial, periodo, tema, fecha, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -268,7 +269,10 @@ def register_asesoria():
         db.commit()
         flash('Asesoría registrada correctamente.', 'success')
         return redirect(url_for('consultas'))
-    return render_template('register_asesoria.html', nombre=session.get('nombre'))
+    
+    # Obtener lista de estudiantes para el select
+    estudiantes = db.execute("SELECT * FROM estudiantes ORDER BY apellido_p, apellido_m, nombre").fetchall()
+    return render_template('register_asesoria.html', nombre=session.get('nombre'), estudiantes=estudiantes, periodo_actual=obtener_nombre_periodo())
 
 # ---------------------------
 # Registro de Tutorías
@@ -1003,10 +1007,31 @@ def perfil_estudiante(id):
         # Obtener datos para gráficos
         datos_frecuencia = analyzer.obtener_datos_grafico_frecuencia(analisis['por_cuatrimestre'])
         datos_motivos = analyzer.obtener_datos_grafico_motivos(analisis['motivos_generales'])
+        
+        # Evaluación de riesgo
+        risk_engine = RiskAssessmentEngine()
+        inasistencias = sum(1 for t in tutorias_data if 'inasistencia' in t.get('motivo', '').lower())
+        bajas_calificaciones = sum(1 for t in tutorias_data if 'baja calificación' in t.get('motivo', '').lower() or 'bajo desempeño' in t.get('motivo', '').lower())
+        
+        evaluacion_riesgo = risk_engine.evaluar_estudiante(
+            {
+                'student_id': estudiante['id'],
+                'matricula': estudiante['matricula'],
+                'nombre': estudiante['nombre'],
+                'apellido_p': estudiante['apellido_p'],
+                'apellido_m': estudiante['apellido_m'],
+                'carrera': estudiante['carrera'],
+                'cuatrimestre': estudiante['cuatrimestre_actual']
+            },
+            tutorias_data,
+            inasistencias,
+            bajas_calificaciones
+        )
     else:
         analisis = None
         datos_frecuencia = None
         datos_motivos = None
+        evaluacion_riesgo = None
     
     return render_template(
         'perfil_estudiante.html',
@@ -1015,6 +1040,7 @@ def perfil_estudiante(id):
         analisis=analisis,
         datos_frecuencia=datos_frecuencia,
         datos_motivos=datos_motivos,
+        evaluacion_riesgo=evaluacion_riesgo,
         nombre=session.get('nombre')
     )
 
