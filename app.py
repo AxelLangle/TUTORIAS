@@ -11,6 +11,11 @@ DATABASE = 'asesorias.db'
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # Necesario para sesiones
 
+# Agregar datetime al contexto de Jinja2
+@app.context_processor
+def inject_now():
+    return {'now': datetime.now}
+
 # ---------------------------
 # Helpers de DB
 # ---------------------------
@@ -721,10 +726,7 @@ def report_period():
         query = "SELECT * FROM tutoria WHERE fecha >= ? AND fecha <= ?"
         params = [start_date, end_date]
         
-        if carrera:
-            query += " AND carrera = ?"
-            params.append(carrera)
-        
+        # Nota: La tabla tutoria no tiene columna 'carrera', solo 'cuatrimestre'
         if cuatrimestre:
             query += " AND cuatrimestre = ?"
             params.append(cuatrimestre)

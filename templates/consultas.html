@@ -72,6 +72,7 @@
                     <th>Cuatrimestre</th>
                     <th>Motivo</th>
                     <th>Fecha</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -83,10 +84,12 @@
                     <td>{{ t['motivo'] }}</td>
                     <td>{{ t['fecha'] }}</td>
                     <td>
+                        <a href="{{ url_for('student_history', student_id=t['id']) }}" title="Ver Historial">📈</a>
+                        <a href="{{ url_for('report_student', student_id=t['id']) }}" title="Descargar PDF">📄</a>
+                        <a href="{{ url_for('editar_tutoria', id=t['id']) }}" title="Editar">✏️</a>
                         <form action="{{ url_for('eliminar_tutoria', id=t['id']) }}" method="post" style="display:inline;">
-                            <button type="submit" onclick="return confirm('¿Eliminar esta tutoría?')">🗑</button>
+                            <button type="submit" onclick="return confirm('¿Eliminar esta tutoría?')" title="Eliminar">🗑</button>
                         </form>
-                        <a href="{{ url_for('editar_tutoria', id=t['id']) }}">✏️</a>
                     </td>
                 </tr>
             {% endfor %}
