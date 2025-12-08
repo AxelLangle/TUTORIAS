@@ -4,34 +4,90 @@
 
 <div style="display:flex; justify-content:center; margin-top:40px;">
     <form method="post" class="form-container">
-  <h2 style="text-align:center; color:#cc1313; margin-bottom:25px; font-size:2rem;">Registrar Asesoría</h2>
-    <label>Nombre:
-      <input type="text" name="nombre" required>
-    </label>
-    <label>Apellido Paterno:
-      <input type="text" name="apellido_p" required>
-    </label>
-    <label>Apellido Materno:
-      <input type="text" name="apellido_m" required>
-    </label>
-    <label>Unidad:
-      <input type="text" name="unidad" required>
-    </label>
-    <label>Parcial:
-      <input type="number" name="parcial" min="1" step="1" required>
-    </label>
-    <label>Tema:
-      <input type="text" name="tema" required>
-    </label>
-    <label>Fecha:
-      <input type="date" name="fecha" required>
-    </label>
-    <button type="submit">Registrar</button>
-  </form>
+        <h2 style="text-align:center; color:#cc1313; margin-bottom:25px; font-size:2rem;">Registrar Asesoría</h2>
+        
+        <!-- Selección de estudiante -->
+        <div class="student-selector">
+            <label style="font-weight: 700; color: #cc1313;">Seleccionar Estudiante:</label>
+            
+            <label>Programa Educativo:
+                <select id="programa_educativo" onchange="updateCarreras()">
+                    <option value="">Todos</option>
+                    <option value="1">Programa Educativo 1 (7° y 10°)</option>
+                    <option value="2">Programa Educativo 2 (1° y 4°)</option>
+                </select>
+            </label>
+            
+            <label>Carrera:
+                <select id="carrera" onchange="updateGrupos()">
+                    <option value="">Todas</option>
+                </select>
+            </label>
+            
+            <label>Cuatrimestre:
+                <select id="cuatrimestre" onchange="updateGrupos()">
+                    <option value="">Todos</option>
+                    {% for cuatri in cuatrimestres_disponibles %}
+                    <option value="{{ cuatri }}">{{ cuatri }}°</option>
+                    {% endfor %}
+                </select>
+            </label>
+            
+            <label>Grupo:
+                <select id="grupo" onchange="updateEstudiantes()">
+                    <option value="">Todos</option>
+                </select>
+            </label>
+            
+            <label>Estudiante:
+                <select id="estudiante_select" name="estudiante_id" onchange="fillStudentData()">
+                    <option value="">Seleccione un estudiante...</option>
+                    {% for est in estudiantes %}
+                    <option value="{{ est['id'] }}" 
+                            data-nombre="{{ est['nombre'] }}"
+                            data-apellido-p="{{ est['apellido_p'] }}"
+                            data-apellido-m="{{ est['apellido_m'] }}"
+                            data-programa="{{ est['programa_educativo'] }}"
+                            data-carrera="{{ est['carrera'] }}"
+                            data-cuatrimestre="{{ est['cuatrimestre_actual'] }}"
+                            data-grupo="{{ est['grupo'] }}">
+                        {{ est['matricula'] }} - {{ est['nombre'] }} {{ est['apellido_p'] }} {{ est['apellido_m'] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        
+        <!-- Datos del estudiante (autocompletados) -->
+        <label>Nombre:
+            <input type="text" id="nombre" name="nombre" required readonly style="background: #f5f5f5;">
+        </label>
+        <label>Apellido Paterno:
+            <input type="text" id="apellido_p" name="apellido_p" required readonly style="background: #f5f5f5;">
+        </label>
+        <label>Apellido Materno:
+            <input type="text" id="apellido_m" name="apellido_m" required readonly style="background: #f5f5f5;">
+        </label>
+        
+        <!-- Datos de la asesoría -->
+        <label>Unidad:
+            <input type="text" name="unidad" required>
+        </label>
+        <label>Parcial:
+            <input type="number" name="parcial" min="1" step="1" required>
+        </label>
+        <label>Período:
+            <input type="text" name="periodo" value="{{ periodo_actual }}" required>
+        </label>
+        <label>Tema:
+            <input type="text" name="tema" required>
+        </label>
+        <label>Fecha de Asesoría:
+            <input type="date" name="fecha" required>
+        </label>
+        <button type="submit">Registrar Asesoría</button>
+    </form>
 </div>
-
-
-
 
 <style>
 .form-container {
@@ -61,6 +117,7 @@
 }
 
 .form-container input,
+.form-container select,
 .form-container textarea {
     margin-top: 6px;
     padding: 12px 14px;
@@ -72,14 +129,20 @@
 }
 
 .form-container input:focus,
+.form-container select:focus,
 .form-container textarea:focus {
     border-color: #4CAF50;
     box-shadow: 0 0 6px rgba(76, 175, 80, 0.35);
     outline: none;
 }
 
-.button-container {
-    text-align: center;
+.student-selector {
+    background: #f0f8ff;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #cc1313;
+    display: grid;
+    gap: 15px;
 }
 
 .form-container button {
@@ -99,22 +162,165 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
-
-.form-container textarea {
-    min-height: 70px;
-}
 </style>
-<script>
-  // Evitar seleccionar fechas anteriores a hoy
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  const formattedDate = `${year}-${month}-${day}`;
 
-  document.querySelector('input[name="fecha"]').setAttribute('min', formattedDate);
+<script>
+const PROGRAMA_1 = {
+    "IS": "Ingeniería en Software",
+    "IMA": "Ingeniería en Mecánica Automotriz",
+    "IF": "Ingeniería Financiera",
+    "ITM": "Ingeniería en Tecnologías de Manufactura",
+    "LNI": "Licenciatura en Negocios Internacionales"
+};
+
+const PROGRAMA_2 = {
+    "ITII": "Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital",
+    "IMA": "Licenciatura en Ingeniería en Mecánica Automotriz",
+    "IF": "Licenciatura en Ingeniería Financiera",
+    "IMAV": "Licenciatura en Ingeniería en Manufactura Avanzadas",
+    "LCIA": "Licenciatura en Comercio Internacional y Aduanas"
+};
+
+// Obtener todos los estudiantes del select
+const estudiantesData = Array.from(document.querySelectorAll('#estudiante_select option')).slice(1).map(opt => ({
+    id: opt.value,
+    nombre: opt.dataset.nombre,
+    apellidoP: opt.dataset.apellidoP,
+    apellidoM: opt.dataset.apellidoM,
+    programa: opt.dataset.programa,
+    carrera: opt.dataset.carrera,
+    cuatrimestre: opt.dataset.cuatrimestre,
+    grupo: opt.dataset.grupo,
+    text: opt.textContent
+}));
+
+function updateCarreras() {
+    const programaSelect = document.getElementById('programa_educativo');
+    const carreraSelect = document.getElementById('carrera');
+    const programa = programaSelect.value;
+    
+    carreraSelect.innerHTML = '<option value="">Todas</option>';
+    
+    if (!programa) {
+        // Mostrar todas las carreras
+        const todasCarreras = new Set([...Object.keys(PROGRAMA_1), ...Object.keys(PROGRAMA_2)]);
+        todasCarreras.forEach(sigla => {
+            const option = document.createElement('option');
+            option.value = sigla;
+            option.textContent = PROGRAMA_1[sigla] || PROGRAMA_2[sigla];
+            carreraSelect.appendChild(option);
+        });
+    } else {
+        const carreras = programa === '1' ? PROGRAMA_1 : PROGRAMA_2;
+        for (const [sigla, nombre] of Object.entries(carreras)) {
+            const option = document.createElement('option');
+            option.value = sigla;
+            option.textContent = nombre;
+            carreraSelect.appendChild(option);
+        }
+    }
+    
+    updateGrupos();
+}
+
+function updateGrupos() {
+    const programaSelect = document.getElementById('programa_educativo');
+    const carreraSelect = document.getElementById('carrera');
+    const cuatrimestreSelect = document.getElementById('cuatrimestre');
+    const grupoSelect = document.getElementById('grupo');
+    
+    const programa = programaSelect.value;
+    const carrera = carreraSelect.value;
+    const cuatrimestre = cuatrimestreSelect.value;
+    
+    grupoSelect.innerHTML = '<option value="">Todos</option>';
+    
+    // Filtrar estudiantes según los criterios
+    let estudiantesFiltrados = estudiantesData;
+    
+    if (programa) {
+        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.programa === programa);
+    }
+    if (carrera) {
+        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.grupo && e.grupo.includes(carrera));
+    }
+    if (cuatrimestre) {
+        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.cuatrimestre === cuatrimestre);
+    }
+    
+    // Obtener grupos únicos
+    const gruposUnicos = [...new Set(estudiantesFiltrados.map(e => e.grupo).filter(g => g))];
+    
+    gruposUnicos.forEach(grupo => {
+        const option = document.createElement('option');
+        option.value = grupo;
+        option.textContent = grupo;
+        grupoSelect.appendChild(option);
+    });
+    
+    updateEstudiantes();
+}
+
+function updateEstudiantes() {
+    const programaSelect = document.getElementById('programa_educativo');
+    const carreraSelect = document.getElementById('carrera');
+    const cuatrimestreSelect = document.getElementById('cuatrimestre');
+    const grupoSelect = document.getElementById('grupo');
+    const estudianteSelect = document.getElementById('estudiante_select');
+    
+    const programa = programaSelect.value;
+    const carrera = carreraSelect.value;
+    const cuatrimestre = cuatrimestreSelect.value;
+    const grupo = grupoSelect.value;
+    
+    estudianteSelect.innerHTML = '<option value="">Seleccione un estudiante...</option>';
+    
+    // Filtrar estudiantes
+    let estudiantesFiltrados = estudiantesData;
+    
+    if (programa) {
+        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.programa === programa);
+    }
+    if (carrera) {
+        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.grupo && e.grupo.includes(carrera));
+    }
+    if (cuatrimestre) {
+        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.cuatrimestre === cuatrimestre);
+    }
+    if (grupo) {
+        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.grupo === grupo);
+    }
+    
+    estudiantesFiltrados.forEach(est => {
+        const option = document.createElement('option');
+        option.value = est.id;
+        option.textContent = est.text;
+        option.dataset.nombre = est.nombre;
+        option.dataset.apellidoP = est.apellidoP;
+        option.dataset.apellidoM = est.apellidoM;
+        estudianteSelect.appendChild(option);
+    });
+}
+
+function fillStudentData() {
+    const select = document.getElementById('estudiante_select');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (selectedOption.value) {
+        document.getElementById('nombre').value = selectedOption.dataset.nombre;
+        document.getElementById('apellido_p').value = selectedOption.dataset.apellidoP;
+        document.getElementById('apellido_m').value = selectedOption.dataset.apellidoM;
+    } else {
+        document.getElementById('nombre').value = '';
+        document.getElementById('apellido_p').value = '';
+        document.getElementById('apellido_m').value = '';
+    }
+}
+
+// Inicializar al cargar
+window.onload = function() {
+    updateCarreras();
+};
 </script>
 
 {% endblock %}
-
-

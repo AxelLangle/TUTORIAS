@@ -63,6 +63,16 @@
             <h3>Motivos Principales</h3>
             <canvas id="chartMotivos"></canvas>
         </div>
+        {% if evaluacion_riesgo %}
+        <div class="chart-container">
+            <h3>🚨 Desglose de Puntuación de Riesgo</h3>
+            <canvas id="chartRiesgo"></canvas>
+            <div class="risk-summary">
+                <p><strong>Clasificación:</strong> <span style="color: {{ evaluacion_riesgo.clasificacion.color }};">{{ evaluacion_riesgo.clasificacion.icono }} {{ evaluacion_riesgo.clasificacion.nivel }}</span></p>
+                <p><strong>Puntuación Total:</strong> {{ evaluacion_riesgo.puntuacion }} puntos</p>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Historial Detallado -->
@@ -144,6 +154,46 @@ new Chart(ctxMotivos, {
         }
     }
 });
+
+{% if evaluacion_riesgo %}
+// Gráfico de Desglose de Riesgo
+const ctxRiesgo = document.getElementById('chartRiesgo').getContext('2d');
+new Chart(ctxRiesgo, {
+    type: 'doughnut',
+    data: {
+        labels: ['Motivos', 'Frecuencia', 'Inasistencias', 'Bajas Calificaciones'],
+        datasets: [{
+            data: [
+                {{ evaluacion_riesgo.desglose_puntuacion.motivos }},
+                {{ evaluacion_riesgo.desglose_puntuacion.frecuencia }},
+                {{ evaluacion_riesgo.desglose_puntuacion.inasistencias }},
+                {{ evaluacion_riesgo.desglose_puntuacion.bajas_calificaciones }}
+            ],
+            backgroundColor: [
+                '#ff6384',
+                '#36a2eb',
+                '#ffce56',
+                '#4bc0c0'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.label + ': ' + context.parsed + ' puntos';
+                    }
+                }
+            }
+        }
+    }
+});
+{% endif %}
 </script>
 {% endif %}
 
