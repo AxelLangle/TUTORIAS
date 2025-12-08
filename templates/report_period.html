@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Generar Reporte por Período{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Generar Reporte por Período</h2>
+    
+    <form method="POST" style="max-width: 600px; margin: 0 auto;">
+        <div style="margin-bottom: 20px;">
+            <label for="start_date" style="display: block; margin-bottom: 5px; font-weight: bold;">Fecha Inicio:</label>
+            <input type="date" id="start_date" name="start_date" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label for="end_date" style="display: block; margin-bottom: 5px; font-weight: bold;">Fecha Fin:</label>
+            <input type="date" id="end_date" name="end_date" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label for="carrera" style="display: block; margin-bottom: 5px; font-weight: bold;">Carrera (Opcional):</label>
+            <input type="text" id="carrera" name="carrera" placeholder="Ej: Ingeniería en Software" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label for="cuatrimestre" style="display: block; margin-bottom: 5px; font-weight: bold;">Cuatrimestre (Opcional):</label>
+            <select id="cuatrimestre" name="cuatrimestre" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                <option value="">-- Todos --</option>
+                <option value="1">1°</option>
+                <option value="2">2°</option>
+                <option value="3">3°</option>
+                <option value="4">4°</option>
+                <option value="5">5°</option>
+                <option value="6">6°</option>
+                <option value="7">7°</option>
+                <option value="8">8°</option>
+                <option value="9">9°</option>
+            </select>
+        </div>
+        
+        <div style="text-align: center;">
+            <button type="submit" style="background: #cc1313; color: white; padding: 12px 30px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px;">
+                Generar Reporte PDF
+            </button>
+            <a href="{{ url_for('consultas') }}" style="display: inline-block; margin-left: 10px; background: #666; color: white; padding: 12px 30px; border-radius: 5px; text-decoration: none; font-weight: bold;">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

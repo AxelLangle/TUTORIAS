@@ -1,0 +1,606 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Riesgo Académico{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #cc1313, #ff6b6b);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+    
+    .dashboard-header h2 {
+        margin: 0 0 10px 0;
+        color: white;
+    }
+    
+    .dashboard-header p {
+        margin: 5px 0;
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        text-align: center;
+        border-left: 4px solid;
+    }
+    
+    .stat-card.alto {
+        border-left-color: #cc1313;
+    }
+    
+    .stat-card.medio {
+        border-left-color: #ff9800;
+    }
+    
+    .stat-card.bajo {
+        border-left-color: #4caf50;
+    }
+    
+    .stat-value {
+        font-size: 32px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    
+    .stat-value.alto {
+        color: #cc1313;
+    }
+    
+    .stat-value.medio {
+        color: #ff9800;
+    }
+    
+    .stat-value.bajo {
+        color: #4caf50;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .stat-percentage {
+        font-size: 14px;
+        color: #999;
+        margin-top: 5px;
+    }
+    
+    .filters-section {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 25px;
+    }
+    
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .filter-group label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .filter-group input,
+    .filter-group select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    
+    .filter-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: #cc1313;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #990000;
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: #666;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #444;
+        transform: translateY(-2px);
+    }
+    
+    .risk-section {
+        margin-bottom: 30px;
+    }
+    
+    .risk-section-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .risk-section-title.alto {
+        color: #cc1313;
+        border-bottom-color: #cc1313;
+    }
+    
+    .risk-section-title.medio {
+        color: #ff9800;
+        border-bottom-color: #ff9800;
+    }
+    
+    .risk-section-title.bajo {
+        color: #4caf50;
+        border-bottom-color: #4caf50;
+    }
+    
+    .risk-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .risk-table th {
+        background: #f5f5f5;
+        padding: 15px;
+        text-align: left;
+        font-weight: bold;
+        border-bottom: 2px solid #ddd;
+        font-size: 13px;
+    }
+    
+    .risk-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        font-size: 13px;
+    }
+    
+    .risk-table tr:hover {
+        background: #f9f9f9;
+    }
+    
+    .student-name {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .matricula {
+        color: #666;
+        font-size: 12px;
+    }
+    
+    .risk-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 12px;
+    }
+    
+    .risk-badge.alto {
+        background: #ffebee;
+        color: #c62828;
+    }
+    
+    .risk-badge.medio {
+        background: #fff3e0;
+        color: #e65100;
+    }
+    
+    .risk-badge.bajo {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .score-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .score-value {
+        font-weight: bold;
+        min-width: 30px;
+    }
+    
+    .score-visual {
+        flex: 1;
+        height: 20px;
+        background: #f0f0f0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .score-fill {
+        height: 100%;
+        background: #cc1313;
+        transition: width 0.3s;
+    }
+    
+    .motivos-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .motivo-tag {
+        display: inline-block;
+        background: #e0f7fa;
+        color: #00838f;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+    
+    .action-link {
+        color: #cc1313;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .action-link:hover {
+        text-decoration: underline;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .chart-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 25px;
+        position: relative;
+        height: 300px;
+    }
+</style>
+
+<div class="dashboard-header">
+    <h2>📊 Panel de Riesgo Académico</h2>
+    <p>Última actualización: {{ "now"|strftime("%d/%m/%Y %H:%M") }}</p>
+    <p>Clasificación automática de estudiantes según indicadores de riesgo académico</p>
+</div>
+
+<!-- Estadísticas Generales -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total de Estudiantes</div>
+        <div class="stat-value">{{ estadisticas.total_estudiantes }}</div>
+    </div>
+    <div class="stat-card alto">
+        <div class="stat-label">Alto Riesgo</div>
+        <div class="stat-value alto">{{ estadisticas.alto_riesgo }}</div>
+        <div class="stat-percentage">{{ estadisticas.porcentaje_alto }}%</div>
+    </div>
+    <div class="stat-card medio">
+        <div class="stat-label">Medio Riesgo</div>
+        <div class="stat-value medio">{{ estadisticas.medio_riesgo }}</div>
+        <div class="stat-percentage">{{ estadisticas.porcentaje_medio }}%</div>
+    </div>
+    <div class="stat-card bajo">
+        <div class="stat-label">Bajo Riesgo</div>
+        <div class="stat-value bajo">{{ estadisticas.bajo_riesgo }}</div>
+        <div class="stat-percentage">{{ estadisticas.porcentaje_bajo }}%</div>
+    </div>
+</div>
+
+<!-- Gráfico de Distribución -->
+<div class="chart-container">
+    <h3 style="margin-top: 0; color: #333;">Distribución de Riesgo</h3>
+    <canvas id="chartRiesgo"></canvas>
+</div>
+
+<!-- Filtros -->
+<div class="filters-section">
+    <h3 style="margin-top: 0; color: #333;">Filtros</h3>
+    <form method="GET" action="{{ url_for('dashboard_risk') }}">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label for="nivel_riesgo">Nivel de Riesgo:</label>
+                <select id="nivel_riesgo" name="nivel_riesgo">
+                    <option value="">-- Todos --</option>
+                    <option value="alto" {% if filtros.nivel_riesgo == 'alto' %}selected{% endif %}>Alto</option>
+                    <option value="medio" {% if filtros.nivel_riesgo == 'medio' %}selected{% endif %}>Medio</option>
+                    <option value="bajo" {% if filtros.nivel_riesgo == 'bajo' %}selected{% endif %}>Bajo</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="carrera">Carrera:</label>
+                <select id="carrera" name="carrera">
+                    <option value="">-- Todas --</option>
+                    {% for c in carreras %}
+                    <option value="{{ c }}" {% if filtros.carrera == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="cuatrimestre">Cuatrimestre:</label>
+                <select id="cuatrimestre" name="cuatrimestre">
+                    <option value="">-- Todos --</option>
+                    {% for ct in cuatrimestres %}
+                    <option value="{{ ct }}" {% if filtros.cuatrimestre == ct %}selected{% endif %}>{{ ct }}°</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="busqueda">Buscar (Nombre/Matrícula):</label>
+                <input type="text" id="busqueda" name="busqueda" placeholder="Ingrese nombre o matrícula" value="{{ filtros.busqueda }}">
+            </div>
+        </div>
+        
+        <div class="filter-buttons">
+            <button type="submit" class="btn btn-primary">🔍 Aplicar Filtros</button>
+            <a href="{{ url_for('dashboard_risk') }}" class="btn btn-secondary">↻ Limpiar Filtros</a>
+        </div>
+    </form>
+</div>
+
+<!-- Estudiantes en Alto Riesgo -->
+{% if alto_riesgo %}
+<div class="risk-section">
+    <div class="risk-section-title alto">
+        <span>🔴 ALTO RIESGO - INTERVENCIÓN URGENTE</span>
+        <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ alto_riesgo|length }} estudiante(s)</span>
+    </div>
+    
+    <table class="risk-table">
+        <thead>
+            <tr>
+                <th>Matrícula / Nombre</th>
+                <th>Carrera</th>
+                <th>Cuatrimestre</th>
+                <th>Motivos Principales</th>
+                <th>Tutorías</th>
+                <th>Puntuación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estudiante in alto_riesgo %}
+            <tr>
+                <td>
+                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
+                    <div class="matricula">{{ estudiante.matricula }}</div>
+                </td>
+                <td>{{ estudiante.carrera }}</td>
+                <td>{{ estudiante.cuatrimestre }}°</td>
+                <td>
+                    <div class="motivos-list">
+                        {% for motivo in estudiante.motivos_frecuentes[:2] %}
+                        <span class="motivo-tag">{{ motivo }}</span>
+                        {% endfor %}
+                    </div>
+                </td>
+                <td>{{ estudiante.num_tutorias }}</td>
+                <td>
+                    <div class="score-bar">
+                        <span class="score-value">{{ estudiante.puntuacion }}</span>
+                        <div class="score-visual">
+                            <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%"></div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <a href="{{ url_for('student_history', student_id=1) }}" class="action-link">Ver Historial</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Estudiantes en Medio Riesgo -->
+{% if medio_riesgo %}
+<div class="risk-section">
+    <div class="risk-section-title medio">
+        <span>🟡 MEDIO RIESGO - MONITOREO REQUERIDO</span>
+        <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ medio_riesgo|length }} estudiante(s)</span>
+    </div>
+    
+    <table class="risk-table">
+        <thead>
+            <tr>
+                <th>Matrícula / Nombre</th>
+                <th>Carrera</th>
+                <th>Cuatrimestre</th>
+                <th>Motivos Principales</th>
+                <th>Tutorías</th>
+                <th>Puntuación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estudiante in medio_riesgo %}
+            <tr>
+                <td>
+                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
+                    <div class="matricula">{{ estudiante.matricula }}</div>
+                </td>
+                <td>{{ estudiante.carrera }}</td>
+                <td>{{ estudiante.cuatrimestre }}°</td>
+                <td>
+                    <div class="motivos-list">
+                        {% for motivo in estudiante.motivos_frecuentes[:2] %}
+                        <span class="motivo-tag">{{ motivo }}</span>
+                        {% endfor %}
+                    </div>
+                </td>
+                <td>{{ estudiante.num_tutorias }}</td>
+                <td>
+                    <div class="score-bar">
+                        <span class="score-value">{{ estudiante.puntuacion }}</span>
+                        <div class="score-visual">
+                            <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%; background: #ff9800;"></div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <a href="{{ url_for('student_history', student_id=1) }}" class="action-link">Ver Historial</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Estudiantes en Bajo Riesgo -->
+{% if bajo_riesgo %}
+<div class="risk-section">
+    <div class="risk-section-title bajo">
+        <span>🟢 BAJO RIESGO - DESEMPEÑO SATISFACTORIO</span>
+        <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ bajo_riesgo|length }} estudiante(s)</span>
+    </div>
+    
+    <table class="risk-table">
+        <thead>
+            <tr>
+                <th>Matrícula / Nombre</th>
+                <th>Carrera</th>
+                <th>Cuatrimestre</th>
+                <th>Motivos Principales</th>
+                <th>Tutorías</th>
+                <th>Puntuación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estudiante in bajo_riesgo %}
+            <tr>
+                <td>
+                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
+                    <div class="matricula">{{ estudiante.matricula }}</div>
+                </td>
+                <td>{{ estudiante.carrera }}</td>
+                <td>{{ estudiante.cuatrimestre }}°</td>
+                <td>
+                    <div class="motivos-list">
+                        {% for motivo in estudiante.motivos_frecuentes[:2] %}
+                        <span class="motivo-tag">{{ motivo }}</span>
+                        {% endfor %}
+                    </div>
+                </td>
+                <td>{{ estudiante.num_tutorias }}</td>
+                <td>
+                    <div class="score-bar">
+                        <span class="score-value">{{ estudiante.puntuacion }}</span>
+                        <div class="score-visual">
+                            <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%; background: #4caf50;"></div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <a href="{{ url_for('student_history', student_id=1) }}" class="action-link">Ver Historial</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if not alto_riesgo and not medio_riesgo and not bajo_riesgo %}
+<div class="no-data">
+    <p>No hay estudiantes que coincidan con los filtros seleccionados</p>
+</div>
+{% endif %}
+
+<!-- Scripts para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de Distribución de Riesgo
+    const ctxRiesgo = document.getElementById('chartRiesgo').getContext('2d');
+    new Chart(ctxRiesgo, {
+        type: 'doughnut',
+        data: {
+            labels: ['Alto Riesgo', 'Medio Riesgo', 'Bajo Riesgo'],
+            datasets: [{
+                data: [
+                    {{ estadisticas.alto_riesgo }},
+                    {{ estadisticas.medio_riesgo }},
+                    {{ estadisticas.bajo_riesgo }}
+                ],
+                backgroundColor: ['#cc1313', '#ff9800', '#4caf50'],
+                borderColor: ['#990000', '#e68900', '#388e3c'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 12 },
+                        padding: 15
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

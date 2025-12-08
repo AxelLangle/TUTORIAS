@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+
+{% block title %}Historial Académico - {{ student.nombre }}{% endblock %}
+
+{% block content %}
+<style>
+    .history-header {
+        background: linear-gradient(135deg, #cc1313, #ff6b6b);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+    
+    .history-header h2 {
+        margin: 0 0 10px 0;
+        color: white;
+    }
+    
+    .student-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .info-item {
+        background: rgba(255,255,255,0.1);
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    
+    .info-label {
+        font-weight: bold;
+        opacity: 0.9;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        text-align: center;
+        border-left: 4px solid #cc1313;
+    }
+    
+    .stat-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #cc1313;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .alert-box {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 4px solid;
+        display: flex;
+        align-items: center;
+    }
+    
+    .alert-critico {
+        background: #ffebee;
+        border-left-color: #cc1313;
+        color: #c62828;
+    }
+    
+    .alert-advertencia {
+        background: #fff3e0;
+        border-left-color: #ff9800;
+        color: #e65100;
+    }
+    
+    .alert-positivo {
+        background: #e8f5e9;
+        border-left-color: #4caf50;
+        color: #2e7d32;
+    }
+    
+    .alert-icon {
+        font-size: 20px;
+        margin-right: 10px;
+    }
+    
+    .chart-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 25px;
+        position: relative;
+        height: 300px;
+    }
+    
+    .cuatrimestre-section {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        border-left: 5px solid #cc1313;
+    }
+    
+    .cuatrimestre-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .cuatrimestre-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .cuatrimestre-stats {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+    }
+    
+    .cuatrimestre-stat {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .stat-badge {
+        background: #e0f7fa;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-weight: bold;
+        color: #00838f;
+    }
+    
+    .tutorias-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+    
+    .tutorias-table th {
+        background: #f5f5f5;
+        padding: 12px;
+        text-align: left;
+        font-weight: bold;
+        border-bottom: 2px solid #ddd;
+        font-size: 13px;
+    }
+    
+    .tutorias-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #eee;
+        font-size: 13px;
+    }
+    
+    .tutorias-table tr:hover {
+        background: #f9f9f9;
+    }
+    
+    .motivo-badge {
+        display: inline-block;
+        background: #e3f2fd;
+        color: #1565c0;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: #cc1313;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #990000;
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: #666;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #444;
+        transform: translateY(-2px);
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+</style>
+
+<div class="history-header">
+    <h2>📚 Historial Académico</h2>
+    <div class="student-info">
+        <div class="info-item">
+            <div class="info-label">Nombre</div>
+            <div>{{ student.nombre }} {{ student.apellido_p }} {{ student.apellido_m }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Matrícula</div>
+            <div>{{ student.matricula }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Carrera</div>
+            <div>{{ student.carrera }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Cuatrimestre Actual</div>
+            <div>{{ student.cuatrimestre }}°</div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Generales -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ analisis.total_tutorias }}</div>
+        <div class="stat-label">Total de Tutorías</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ analisis.cuatrimestres_registrados }}</div>
+        <div class="stat-label">Cuatrimestres</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ analisis.motivos_generales|length }}</div>
+        <div class="stat-label">Motivos Diferentes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{% if analisis.motivos_generales %}{{ analisis.motivos_generales|first }}{% else %}N/A{% endif %}</div>
+        <div class="stat-label">Motivo Principal</div>
+    </div>
+</div>
+
+<!-- Alertas -->
+{% if analisis.alertas %}
+<div style="margin-bottom: 25px;">
+    <h3 style="color: #cc1313; margin-bottom: 15px;">⚠️ Análisis de Patrones</h3>
+    {% for alerta in analisis.alertas %}
+    <div class="alert-box alert-{{ alerta.nivel }}">
+        <div class="alert-icon">
+            {% if alerta.nivel == 'crítico' %}🔴
+            {% elif alerta.nivel == 'advertencia' %}🟡
+            {% elif alerta.nivel == 'positivo' %}🟢
+            {% endif %}
+        </div>
+        <div>{{ alerta.mensaje }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Gráficos -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; margin-bottom: 25px;">
+    <div class="chart-container">
+        <h3 style="margin-top: 0; color: #333;">Tutorías por Cuatrimestre</h3>
+        <canvas id="chartFrecuencia"></canvas>
+    </div>
+    <div class="chart-container">
+        <h3 style="margin-top: 0; color: #333;">Motivos Principales</h3>
+        <canvas id="chartMotivos"></canvas>
+    </div>
+</div>
+
+<!-- Historial por Cuatrimestre -->
+<h3 style="color: #cc1313; margin-bottom: 20px;">📅 Historial Detallado por Cuatrimestre</h3>
+
+{% if analisis.por_cuatrimestre %}
+    {% for cuatrimestre, tutorias in analisis.por_cuatrimestre.items() %}
+    <div class="cuatrimestre-section">
+        <div class="cuatrimestre-header">
+            <div class="cuatrimestre-title">Cuatrimestre {{ cuatrimestre }}°</div>
+            <div class="cuatrimestre-stats">
+                <div class="cuatrimestre-stat">
+                    <span>Tutorías:</span>
+                    <span class="stat-badge">{{ tutorias|length }}</span>
+                </div>
+                {% if analisis.estadisticas_por_cuatrimestre[cuatrimestre].motivo_principal != 'N/A' %}
+                <div class="cuatrimestre-stat">
+                    <span>Motivo Principal:</span>
+                    <span class="stat-badge">{{ analisis.estadisticas_por_cuatrimestre[cuatrimestre].motivo_principal }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if tutorias %}
+        <table class="tutorias-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Motivo</th>
+                    <th>Descripción</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tutoría in tutorias %}
+                <tr>
+                    <td>{{ tutoría.fecha }}</td>
+                    <td><span class="motivo-badge">{{ tutoría.motivo }}</span></td>
+                    <td>{{ tutoría.descripcion[:50] }}{% if tutoría.descripcion|length > 50 %}...{% endif %}</td>
+                    <td>{{ tutoría.observaciones[:40] }}{% if tutoría.observaciones and tutoría.observaciones|length > 40 %}...{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="no-data">No hay tutorías registradas para este cuatrimestre</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+<div class="no-data">
+    <p>No hay historial de tutorías para este estudiante</p>
+</div>
+{% endif %}
+
+<!-- Botones de Acción -->
+<div class="action-buttons">
+    <a href="{{ url_for('report_student', student_id=analisis.por_cuatrimestre|first if analisis.por_cuatrimestre else 1) }}" class="btn btn-primary">
+        📥 Descargar Reporte PDF
+    </a>
+    <a href="{{ url_for('consultas') }}" class="btn btn-secondary">
+        ← Volver a Consultas
+    </a>
+</div>
+
+<!-- Scripts para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de Frecuencia
+    const ctxFrecuencia = document.getElementById('chartFrecuencia').getContext('2d');
+    new Chart(ctxFrecuencia, {
+        type: 'line',
+        data: {
+            labels: {{ datos_frecuencia.labels|tojson }},
+            datasets: [{
+                label: 'Número de Tutorías',
+                data: {{ datos_frecuencia.data|tojson }},
+                borderColor: '#cc1313',
+                backgroundColor: 'rgba(204, 19, 19, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 6,
+                pointBackgroundColor: '#cc1313',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        font: { size: 12 }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    
+    // Gráfico de Motivos
+    const ctxMotivos = document.getElementById('chartMotivos').getContext('2d');
+    new Chart(ctxMotivos, {
+        type: 'bar',
+        data: {
+            labels: {{ datos_motivos.labels|tojson }},
+            datasets: [{
+                label: 'Frecuencia',
+                data: {{ datos_motivos.data|tojson }},
+                backgroundColor: [
+                    '#cc1313',
+                    '#ff6b6b',
+                    '#ff8787',
+                    '#ffab91',
+                    '#ffcc80'
+                ],
+                borderRadius: 5
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

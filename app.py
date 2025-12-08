@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, g, session, flash
+from flask import Flask, render_template, request, redirect, url_for, g, session, flash, send_file
 import re
 import sqlite3
 from datetime import datetime
 from functools import wraps
+from pdf_generator import PDFReportGenerator
+from academic_history import AcademicHistoryAnalyzer
+from risk_assessment import RiskAssessmentEngine
 
 DATABASE = 'asesorias.db'
 app = Flask(__name__)
@@ -483,6 +486,272 @@ def editar_tutoria_grupal(id):
 
 
 
+
+# ---------------------------
+# Rutas para Panel de Riesgo Académico
+# ---------------------------
+
+@app.route('/dashboard/risk')
+@login_required
+def dashboard_risk():
+    """Muestra el panel de riesgo académico con clasificación de estudiantes"""
+    db = get_db()
+    
+    # Obtener filtros
+    nivel_riesgo = request.args.get('nivel_riesgo', '')
+    carrera = request.args.get('carrera', '')
+    cuatrimestre = request.args.get('cuatrimestre', '')
+    busqueda = request.args.get('busqueda', '').strip().lower()
+    
+    # Obtener todos los estudiantes únicos
+    tutorias_todas = db.execute("SELECT DISTINCT nombre, apellido_p, apellido_m, matricula, cuatrimestre FROM tutoria").fetchall()
+    
+    # Preparar datos para evaluación
+    estudiantes_data = []
+    
+    for tut in tutorias_todas:
+        # Obtener todas las tutorías del estudiante
+        tutorias_est = db.execute(
+            "SELECT * FROM tutoria WHERE nombre = ? AND apellido_p = ? AND apellido_m = ? ORDER BY fecha DESC",
+            (tut['nombre'], tut['apellido_p'], tut['apellido_m'])
+        ).fetchall()
+        
+        # Contar inasistencias y bajas calificaciones
+        inasistencias = sum(1 for t in tutorias_est if 'inasistencia' in t['motivo'].lower())
+        bajas_calificaciones = sum(1 for t in tutorias_est if 'baja calificación' in t['motivo'].lower() or 'bajo desempeño' in t['motivo'].lower())
+        
+        student_info = {
+            'info': {
+                'nombre': tut['nombre'],
+                'apellido_p': tut['apellido_p'],
+                'apellido_m': tut['apellido_m'],
+                'matricula': tut['matricula'],
+                'carrera': 'Ingeniería en Software',
+                'cuatrimestre': tut['cuatrimestre']
+            },
+            'tutorias': [dict(t) for t in tutorias_est],
+            'inasistencias': inasistencias,
+            'bajas_calificaciones': bajas_calificaciones
+        }
+        
+        estudiantes_data.append(student_info)
+    
+    # Evaluar riesgo
+    engine = RiskAssessmentEngine()
+    evaluaciones = engine.evaluar_multiples_estudiantes(estudiantes_data)
+    
+    # Aplicar filtros
+    filtros = {
+        'nivel_riesgo': nivel_riesgo,
+        'carrera': carrera,
+        'cuatrimestre': cuatrimestre,
+        'busqueda': busqueda
+    }
+    evaluaciones_filtradas = engine.filtrar_evaluaciones(evaluaciones, filtros)
+    
+    # Generar estadísticas
+    estadisticas = engine.generar_estadisticas_riesgo(evaluaciones)
+    
+    # Separar por nivel de riesgo
+    alto_riesgo = [e for e in evaluaciones_filtradas if e['clasificacion']['nivel'] == 'alto']
+    medio_riesgo = [e for e in evaluaciones_filtradas if e['clasificacion']['nivel'] == 'medio']
+    bajo_riesgo = [e for e in evaluaciones_filtradas if e['clasificacion']['nivel'] == 'bajo']
+    
+    # Obtener carreras y cuatrimestres únicos para filtros
+    carreras = sorted(set(e['carrera'] for e in evaluaciones if e['carrera'] != 'N/A'))
+    cuatrimestres = sorted(set(e['cuatrimestre'] for e in evaluaciones if e['cuatrimestre'] != 'N/A'), 
+                          key=lambda x: int(x) if x.isdigit() else 0)
+    
+    return render_template(
+        'dashboard_risk.html',
+        estadisticas=estadisticas,
+        alto_riesgo=alto_riesgo,
+        medio_riesgo=medio_riesgo,
+        bajo_riesgo=bajo_riesgo,
+        carreras=carreras,
+        cuatrimestres=cuatrimestres,
+        filtros=filtros,
+        nombre=session.get('nombre')
+    )
+
+# ---------------------------
+# Rutas para Historial Académico de Estudiantes
+# ---------------------------
+
+@app.route('/student/<int:student_id>/history')
+@login_required
+def student_history(student_id):
+    """Muestra el historial académico completo de un estudiante"""
+    db = get_db()
+    
+    # Obtener información del estudiante
+    tutoria = db.execute("SELECT * FROM tutoria WHERE id = ?", (student_id,)).fetchone()
+    
+    if not tutoria:
+        flash("Estudiante no encontrado.", "error")
+        return redirect(url_for('consultas'))
+    
+    # Obtener todas las tutorías del estudiante
+    tutorias = db.execute(
+        "SELECT * FROM tutoria WHERE nombre = ? AND apellido_p = ? AND apellido_m = ? ORDER BY fecha DESC",
+        (tutoria['nombre'], tutoria['apellido_p'], tutoria['apellido_m'])
+    ).fetchall()
+    
+    # Convertir a dicts
+    tutorias_data = [dict(t) for t in tutorias]
+    
+    # Analizar historial
+    analyzer = AcademicHistoryAnalyzer()
+    analisis = analyzer.generar_analisis_completo(tutorias_data)
+    
+    # Obtener datos para gráficos
+    datos_frecuencia = analyzer.obtener_datos_grafico_frecuencia(analisis['por_cuatrimestre'])
+    datos_motivos = analyzer.obtener_datos_grafico_motivos(analisis['motivos_generales'])
+    
+    # Información del estudiante
+    student_info = {
+        'nombre': tutoria['nombre'],
+        'apellido_p': tutoria['apellido_p'],
+        'apellido_m': tutoria['apellido_m'],
+        'matricula': tutoria['matricula'],
+        'carrera': 'Ingeniería en Software',
+        'cuatrimestre': tutoria['cuatrimestre']
+    }
+    
+    return render_template(
+        'student_history.html',
+        student=student_info,
+        analisis=analisis,
+        datos_frecuencia=datos_frecuencia,
+        datos_motivos=datos_motivos,
+        nombre=session.get('nombre')
+    )
+
+# ---------------------------
+# Rutas para Generación de Reportes PDF
+# ---------------------------
+
+@app.route('/report/student/<int:student_id>')
+@login_required
+def report_student(student_id):
+    """Genera un reporte PDF para un estudiante específico"""
+    db = get_db()
+    
+    # Obtener información del estudiante (última tutoría)
+    tutoria = db.execute("SELECT * FROM tutoria WHERE id = ?", (student_id,)).fetchone()
+    
+    if not tutoria:
+        flash("Estudiante no encontrado.", "error")
+        return redirect(url_for('consultas'))
+    
+    # Obtener todas las tutorías del estudiante
+    tutorias = db.execute(
+        "SELECT * FROM tutoria WHERE nombre = ? AND apellido_p = ? AND apellido_m = ? ORDER BY fecha DESC",
+        (tutoria['nombre'], tutoria['apellido_p'], tutoria['apellido_m'])
+    ).fetchall()
+    
+    # Preparar datos
+    student_data = {
+        'nombre': tutoria['nombre'],
+        'apellido_p': tutoria['apellido_p'],
+        'apellido_m': tutoria['apellido_m'],
+        'matricula': tutoria['matricula'],
+        'cuatrimestre': tutoria['cuatrimestre'],
+        'carrera': 'Ingeniería en Software',
+        'tutor': session.get('nombre')
+    }
+    
+    tutorias_data = [dict(t) for t in tutorias]
+    
+    # Generar PDF
+    generator = PDFReportGenerator()
+    pdf_buffer = generator.generate_student_report(student_data, tutorias_data)
+    
+    filename = f"Reporte_Tutorias_{tutoria['nombre']}_{tutoria['apellido_p']}.pdf"
+    return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
+
+@app.route('/report/group/<int:group_id>')
+@login_required
+def report_group(group_id):
+    """Genera un reporte PDF para un grupo específico"""
+    db = get_db()
+    
+    # Obtener información del grupo
+    grupo = db.execute("SELECT * FROM tutoria_grupal WHERE id = ?", (group_id,)).fetchone()
+    
+    if not grupo:
+        flash("Grupo no encontrado.", "error")
+        return redirect(url_for('consultas'))
+    
+    # Obtener todas las tutorías del grupo
+    tutorias_grupales = db.execute(
+        "SELECT * FROM tutoria_grupal WHERE grupo_nombre = ? ORDER BY fecha DESC",
+        (grupo['grupo_nombre'],)
+    ).fetchall()
+    
+    # Preparar datos
+    group_data = {
+        'grupo_nombre': grupo['grupo_nombre'],
+        'carrera': grupo['carrera'],
+        'cuatrimestre': grupo['cuatrimestre'],
+    }
+    
+    tutorias_data = [dict(t) for t in tutorias_grupales]
+    
+    # Generar PDF
+    generator = PDFReportGenerator()
+    pdf_buffer = generator.generate_group_report(group_data, tutorias_data)
+    
+    filename = f"Reporte_Tutorias_Grupo_{grupo['grupo_nombre']}.pdf"
+    return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
+
+@app.route('/report/period', methods=['GET', 'POST'])
+@login_required
+def report_period():
+    """Genera un reporte PDF para un período específico"""
+    if request.method == 'POST':
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        carrera = request.form.get('carrera', '')
+        cuatrimestre = request.form.get('cuatrimestre', '')
+        
+        db = get_db()
+        
+        # Construir consulta dinámicamente
+        query = "SELECT * FROM tutoria WHERE fecha >= ? AND fecha <= ?"
+        params = [start_date, end_date]
+        
+        if carrera:
+            query += " AND carrera = ?"
+            params.append(carrera)
+        
+        if cuatrimestre:
+            query += " AND cuatrimestre = ?"
+            params.append(cuatrimestre)
+        
+        query += " ORDER BY fecha DESC"
+        
+        tutorias = db.execute(query, params).fetchall()
+        
+        # Preparar datos
+        period_data = {
+            'start_date': start_date,
+            'end_date': end_date,
+            'carrera': carrera or 'Todas',
+            'cuatrimestre': cuatrimestre or 'Todos',
+        }
+        
+        tutorias_data = [dict(t) for t in tutorias]
+        tutorias_data = [{**t, 'tipo': 'Individual'} for t in tutorias_data]
+        
+        # Generar PDF
+        generator = PDFReportGenerator()
+        pdf_buffer = generator.generate_period_report(period_data, tutorias_data)
+        
+        filename = f"Reporte_Periodo_{start_date}_a_{end_date}.pdf"
+        return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
+    
+    return render_template('report_period.html', nombre=session.get('nombre'))
 
 # ---------------------------
 # Ejecutar la app
