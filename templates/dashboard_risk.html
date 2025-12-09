@@ -402,7 +402,7 @@
                             <strong>{{ est.nombre }} {{ est.apellido_p }}</strong>
                             <span>{{ est.matricula }} | {{ est.carrera }} ({{ est.cuatrimestre }}°)</span>
                         </div>
-                        <a href="{{ url_for('student_history', student_id=est.student_id) }}" class="btn-link">Ver Historial</a>
+                        <a href="{{ url_for('student_history', student_id=est.id) }}" class="btn-link">Ver Historial</a>
                     </div>
                     {% endfor %}
                 {% else %}
@@ -422,7 +422,7 @@
                             <strong>{{ est.nombre }} {{ est.apellido_p }}</strong>
                             <span>{{ est.matricula }} | {{ est.carrera }} ({{ est.cuatrimestre }}°)</span>
                         </div>
-                        <a href="{{ url_for('student_history', student_id=est.student_id) }}" class="btn-link">Ver Historial</a>
+                        <a href="{{ url_for('student_history', student_id=est.id) }}" class="btn-link">Ver Historial</a>
                     </div>
                     {% endfor %}
                 {% else %}
@@ -442,7 +442,7 @@
                             <strong>{{ est.nombre }} {{ est.apellido_p }}</strong>
                             <span>{{ est.matricula }} | {{ est.carrera }} ({{ est.cuatrimestre }}°)</span>
                         </div>
-                        <a href="{{ url_for('student_history', student_id=est.student_id) }}" class="btn-link">Ver Historial</a>
+                        <a href="{{ url_for('student_history', student_id=est.id) }}" class="btn-link">Ver Historial</a>
                     </div>
                     {% endfor %}
                 {% else %}
