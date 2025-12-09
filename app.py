@@ -894,8 +894,8 @@ def nuevo_estudiante():
         
         # Validar que la matrícula no exista
         existe = db.execute("SELECT id FROM estudiantes WHERE matricula = ?", (data.get('matricula'),)).fetchone()
-              if existe:
-            flash(f"Ya existe un estudiante con la matrícula {data.get(\'matricula\')}.", "error")
+        if existe:
+            flash(f"Ya existe un estudiante con la matrícula {data.get('matricula')}.", "error")
             return redirect(url_for(\'nuevo_estudiante\'))
 
         # Obtener el nombre completo de la carrera
@@ -913,7 +913,8 @@ def nuevo_estudiante():
                     data.get('matricula'),
                     data.get('nombre'),
                     data.get('apellido_p'),
-                    data.get('apellido_m                    data.get(\'cuatrimestre_actual\'),
+                    data.get('apellido_m'),
+                    data.get('cuatrimestre_actual'),
                     carrera_nombre,
                     data.get('grupo'),
                     int(data.get('programa_educativo', 2)),
@@ -1129,5 +1130,3 @@ def api_estudiantes():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
