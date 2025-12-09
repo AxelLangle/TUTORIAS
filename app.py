@@ -1059,9 +1059,6 @@ def perfil_estudiante(id):
 # ---------------------------
 # Ejecutar la app
 # ---------------------------
-if __name__ == '__main__':
-    app.run(debug=True)
-
 # ---------------------------
 # API para selección dinámica
 # ---------------------------
@@ -1129,3 +1126,8 @@ def api_estudiantes():
     } for est in estudiantes]
     
     return jsonify(estudiantes_list)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
