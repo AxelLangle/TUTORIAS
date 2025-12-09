@@ -47,6 +47,8 @@
 
     .hero-text h2 { margin: 0; font-size: 24px; font-weight: 700; }
     .hero-text p { margin: 6px 0 0 0; opacity: 0.85; font-size: 13px; }
+    .student-name { margin: 0; font-size: 28px; font-weight: 800; line-height: 1.1; }
+    .student-subtitle { margin: 6px 0 0 0; opacity: 0.85; font-size: 13px; }
 
     .hero-details {
         background: rgba(255,255,255,0.1);
@@ -140,8 +142,8 @@
 <div class="history-wrapper">
     <div class="history-hero">
         <div class="hero-text">
-            <h2>📚 Historial Académico</h2>
-            <p>Perfil y evolución de {{ student.nombre }} {{ student.apellido_p }}</p>
+            <div class="student-name">{{ student.nombre }} {{ student.apellido_p }} {{ student.apellido_m }}</div>
+            <div class="student-subtitle">📚 Historial Académico · Perfil y evolución</div>
         </div>
         <div class="hero-details">
             <div class="hero-item"><strong>Matrícula</strong>{{ student.matricula }}</div>
