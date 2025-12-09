@@ -5,15 +5,14 @@
 {% block content %}
 <style>
     .dashboard-header {
-        /* Eliminado el fondo degradado para usar el color de fondo de la página */
-        color: #f0f0f0;
-        padding: 0; /* Eliminado padding para que solo sea el título */
+        color: #333;
+        padding: 0;
         margin-bottom: 25px;
     }
     
     .dashboard-header h2 {
         margin: 0 0 10px 0;
-        color: #f0f0f0;
+        color: #333;
         font-size: 24px;
     }
     
@@ -31,12 +30,12 @@
     }
     
     .stat-card {
-        background: #2a2a4a; /* Fondo de tarjeta oscuro */
+        background: white; /* Fondo de tarjeta claro */
         padding: 20px;
         border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        text-align: left; /* Alineación a la izquierda como en la imagen */
-        border: none; /* Eliminado el borde izquierdo */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        text-align: left;
+        border: 1px solid #eee; /* Borde sutil */
     }
     
     .stat-card.alto {
@@ -55,7 +54,7 @@
         font-size: 36px;
         font-weight: bold;
         margin: 0;
-        color: #f0f0f0;
+        color: #333;
     }
     
     .stat-value.alto {
@@ -72,7 +71,7 @@
     
     .stat-label {
         font-size: 14px;
-        color: #b0b0c0; /* Color de etiqueta más claro */
+        color: #666;
         margin-top: 0;
         margin-bottom: 10px;
     }
@@ -84,10 +83,10 @@
     }
     
     .filters-section {
-        background: #2a2a4a; /* Fondo de filtros oscuro */
+        background: white; /* Fondo de filtros claro */
         padding: 20px;
         border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         margin-bottom: 25px;
     }
     
@@ -107,17 +106,17 @@
         font-weight: bold;
         margin-bottom: 5px;
         font-size: 14px;
-        color: #f0f0f0; /* Texto de etiqueta claro */
+        color: #333; /* Texto de etiqueta oscuro */
     }
     
     .filter-group input,
     .filter-group select {
         padding: 10px;
-        border: 1px solid #444;
+        border: 1px solid #ddd;
         border-radius: 5px;
         font-size: 14px;
-        background: #1e1e2f; /* Fondo de input oscuro */
-        color: #f0f0f0; /* Texto de input claro */
+        background: white; /* Fondo de input claro */
+        color: #333; /* Texto de input oscuro */
     }
     
     .filter-buttons {
@@ -135,22 +134,22 @@
     }
     
     .btn-primary {
-        background: #4a7cff; /* Azul para el botón principal */
+        background: #cc1313; /* Rojo original */
         color: white;
     }
     
     .btn-primary:hover {
-        background: #3a6cd0;
+        background: #990000; /* Rojo oscuro original */
         transform: translateY(-2px);
     }
     
     .btn-secondary {
-        background: #3a3a5a; /* Gris oscuro para el botón secundario */
+        background: #666; /* Gris original */
         color: white;
     }
     
     .btn-secondary:hover {
-        background: #4a4a6a;
+        background: #444; /* Gris oscuro original */
         transform: translateY(-2px);
     }
     
@@ -193,24 +192,25 @@
         font-size: 18px;
         font-weight: bold;
         margin-bottom: 15px;
-        padding-bottom: 0;
+        padding-bottom: 0; /* Eliminar padding y borde inferior para que se parezca a la imagen */
         border-bottom: none;
-        display: block; /* Para que ocupe todo el ancho */
-        color: #f0f0f0;
+        display: block;
+        color: #333;
     }
     
     .risk-section-title.alto {
-        color: #cc1313;
-        border-bottom-color: #cc1313;
+        color: #333; /* Color de texto normal */
+        border-bottom-color: none;
     }
     
     .risk-section-title.medio {
-        color: #ff9800;
-        border-bottom-color: #ff9800;
+        color: #333; /* Color de texto normal */
+        border-bottom-color: none;
     }
     
     .risk-section-title.bajo {
-        color: #f0f0f0;
+        color: #333; /* Color de texto normal */
+        border-bottom-color: none;
     }
     
     /* Nuevos estilos para el diseño de lista de riesgo */
@@ -225,16 +225,16 @@
         justify-content: space-between;
         align-items: center;
         padding: 15px 20px;
-        background: #2a2a4a; /* Fondo de tarjeta oscuro */
+        background: white; /* Fondo de tarjeta claro */
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         text-decoration: none;
         color: inherit;
         transition: background 0.2s;
     }
     
     .risk-item:hover {
-        background: #3a3a5a;
+        background: #f5f5f5;
     }
     
     .risk-score-badge {
@@ -245,17 +245,17 @@
     }
     
     .risk-score-badge.alto {
-        background: #990000; /* Rojo oscuro */
+        background: #cc1313; /* Rojo original */
         color: white;
     }
     
     .risk-score-badge.medio {
-        background: #e65100; /* Naranja oscuro */
+        background: #ff9800; /* Naranja original */
         color: white;
     }
     
     .risk-score-badge.bajo {
-        background: #2e7d32; /* Verde oscuro */
+        background: #4caf50; /* Verde original */
         color: white;
     }
     
@@ -277,12 +277,12 @@
     
     .student-name {
         font-weight: bold;
-        color: #f0f0f0;
+        color: #333;
         font-size: 16px;
     }
     
     .matricula {
-        color: #b0b0c0;
+        color: #666;
         font-size: 12px;
     }
     
@@ -351,7 +351,7 @@
     }
     
     .action-link {
-        color: #4a7cff;
+        color: #cc1313;
         text-decoration: none;
         font-weight: bold;
         cursor: pointer;
