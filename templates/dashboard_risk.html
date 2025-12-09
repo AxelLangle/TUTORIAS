@@ -5,14 +5,18 @@
 {% block content %}
 <style>
     .dashboard-header {
-        color: #333;
-        padding: 0;
+        background: #cc1313; /* Fondo rojo */
+        color: white;
+        padding: 20px;
         margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     
     .dashboard-header h2 {
-        margin: 0 0 10px 0;
-        color: #333;
+        margin: 0;
+        color: white;
         font-size: 24px;
     }
     
@@ -20,6 +24,7 @@
         margin: 5px 0;
         font-size: 14px;
         opacity: 0.9;
+        color: white;
     }
     
     .stats-grid {
@@ -30,12 +35,15 @@
     }
     
     .stat-card {
-        background: white; /* Fondo de tarjeta claro */
-        padding: 20px;
-        border-radius: 10px;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         text-align: left;
-        border: 1px solid #eee; /* Borde sutil */
+        border: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     
     .stat-card.alto {
@@ -51,7 +59,7 @@
     }
     
     .stat-value {
-        font-size: 36px;
+        font-size: 28px; /* Más pequeño */
         font-weight: bold;
         margin: 0;
         color: #333;
@@ -73,7 +81,7 @@
         font-size: 14px;
         color: #666;
         margin-top: 0;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }
     
     .stat-percentage {
@@ -83,11 +91,12 @@
     }
     
     .filters-section {
-        background: white; /* Fondo de filtros claro */
+        background: white;
         padding: 20px;
-        border-radius: 10px;
+        border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         margin-bottom: 25px;
+        border: 1px solid #eee;
     }
     
     .filters-grid {
@@ -154,7 +163,10 @@
     }
     
     .risk-section {
-        margin-bottom: 30px;
+        margin-bottom: 25px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
     .main-grid {
@@ -191,33 +203,42 @@
     .risk-section-title {
         font-size: 18px;
         font-weight: bold;
-        margin-bottom: 15px;
-        padding-bottom: 0; /* Eliminar padding y borde inferior para que se parezca a la imagen */
-        border-bottom: none;
-        display: block;
+        margin-bottom: 0;
+        padding: 15px;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
         color: #333;
+        background: white;
+        border-left: 5px solid;
     }
     
     .risk-section-title.alto {
-        color: #333; /* Color de texto normal */
-        border-bottom-color: none;
+        color: #333;
+        border-left-color: #cc1313;
     }
     
     .risk-section-title.medio {
-        color: #333; /* Color de texto normal */
-        border-bottom-color: none;
+        color: #333;
+        border-left-color: #ff9800;
     }
     
     .risk-section-title.bajo {
-        color: #333; /* Color de texto normal */
-        border-bottom-color: none;
+        color: #333;
+        border-left-color: #4caf50;
     }
     
     /* Nuevos estilos para el diseño de lista de riesgo */
     .risk-list {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 0; /* Eliminar el gap entre items */
+        background: white;
+        border-radius: 0 0 8px 8px;
+        border: 1px solid #eee;
+        border-top: none;
+        margin-bottom: 25px;
     }
     
     .risk-item {
@@ -225,16 +246,17 @@
         justify-content: space-between;
         align-items: center;
         padding: 15px 20px;
-        background: white; /* Fondo de tarjeta claro */
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background: white;
+        border-radius: 0;
+        box-shadow: none;
         text-decoration: none;
         color: inherit;
         transition: background 0.2s;
+        border-bottom: 1px solid #eee;
     }
     
     .risk-item:hover {
-        background: #f5f5f5;
+        background: #f0f0f0;
     }
     
     .risk-score-badge {
@@ -272,7 +294,7 @@
     }
     
     .risk-table tr:hover {
-        background: #3a3a5a;
+        background: #f9f9f9;
     }
     
     .student-name {
