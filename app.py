@@ -1000,27 +1000,7 @@ def editar_estudiante(id):
     
     return render_template('editar_estudiante.html', estudiante=estudiante, nombre=session.get('nombre'))
 
-@app.route('/estudiantes/eliminar/<int:id>', methods=['POST'])
-@login_required
-def eliminar_estudiante(id):
-    """Elimina un estudiante"""
-    db = get_db()
-    
-    # Verificar si el estudiante tiene tutorías asociadas
-    tutorias = db.execute("SELECT COUNT(*) as count FROM tutoria WHERE estudiante_id = ?", (id,)).fetchone()
-    
-    if tutorias and tutorias['count'] > 0:
-        flash(f"No se puede eliminar el estudiante porque tiene {tutorias['count']} tutoría(s) asociada(s).", "error")
-        return redirect(url_for('lista_estudiantes'))
-    
-    try:
-        db.execute("DELETE FROM estudiantes WHERE id = ?", (id,))
-        db.commit()
-        flash("Estudiante eliminado exitosamente.", "success")
-    except Exception as e:
-        flash(f"Error al eliminar estudiante: {str(e)}", "error")
-    
-    return redirect(url_for('lista_estudiantes'))
+
 
 @app.route('/estudiantes/perfil/<int:id>')
 @login_required
