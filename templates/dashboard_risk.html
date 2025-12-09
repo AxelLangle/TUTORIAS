@@ -373,7 +373,7 @@
         <!-- Filtros -->
         <div class="filters-section">
             <h3 style="margin-top: 0; color: #333;">Filtros</h3>
-            <form method="GET" action="{{ url_for(\'dashboard_risk\') }}">
+            <form method="GET" action="{{ url_for('dashboard_risk') }}">
                 <div class="filters-grid">
             <div class="filter-group">
                 <label for="nivel_riesgo">Nivel de Riesgo:</label>
@@ -413,7 +413,7 @@
         
             <div class="filter-buttons">
                 <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
-                <a href="{{ url_for(\'dashboard_risk\') }}" class="btn btn-secondary">Limpiar</a>
+                <a href="{{ url_for('dashboard_risk') }}" class="btn btn-secondary">Limpiar</a>
             </div>
         </form>
     </div>
@@ -473,7 +473,7 @@
                         </div>
                     </td>
                     <td>
-                        <a href="{{ url_for(\'student_history\', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
+                        <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -528,7 +528,7 @@
                         </div>
                     </td>
                     <td>
-                        <a href="{{ url_for(\'student_history\', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
+                        <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -583,7 +583,7 @@
                         </div>
                     </td>
                     <td>
-                        <a href="{{ url_for(\'student_history\', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
+                        <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -604,11 +604,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Gráfico de Distribución de Riesgo
-    const ctxRiesgo = document.getElementById(\'chartRiesgo\').getContext(\'2d\');
+    const ctxRiesgo = document.getElementById("chartRiesgo").getContext("2d");
     new Chart(ctxRiesgo, {
-        type: \'doughnut\',
+        type: "doughnut",
         data: {
-            labels: [\'Alto Riesgo\', \'Medio Riesgo\', \'Bajo Riesgo\'],
+            labels: ["Alto Riesgo", "Medio Riesgo", "Bajo Riesgo"],
             datasets: [{
                 data: [
                     {{ estadisticas.alto_riesgo }},
@@ -625,7 +625,7 @@
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: \'bottom\',
+                    position: "bottom",
                     labels: {
                         font: { size: 12 },
                         padding: 15

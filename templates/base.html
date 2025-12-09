@@ -44,7 +44,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 2px 5px rgba(0,0,0,0.15);
         }
-        nav a:hover {
+        nav a:hover, nav a.active {
             background: #cc1313;
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
@@ -132,14 +132,14 @@
     <header>
         <h1>Registro de Asesorías y Tutorías</h1>
         <nav>
-            <a href="{{ url_for('index') }}">Inicio</a>
-            <a href="{{ url_for('register_asesoria') }}">Registrar Asesoría</a>
-            <a href="{{ url_for('register_tutoria') }}">Registrar Tutoría</a>
-            <a href="{{ url_for('register_tutoria_grupal') }}">Registrar Tutoría Grupal</a>
-            <a href="{{ url_for('consultas') }}">Consultas</a>
-            <a href="{{ url_for('lista_estudiantes') }}">📚 Estudiantes</a>
-            <a href="{{ url_for('dashboard_risk') }}" style="background: #ff6b6b;">🚨 Panel de Riesgo</a>
-            <a href="{{ url_for('report_period') }}">📄 Reportes PDF</a>
+            <a href="{{ url_for('index') }}" class="{% if active_page == 'index' %}active{% endif %}">Inicio</a>
+            <a href="{{ url_for('register_asesoria') }}" class="{% if active_page == 'register_asesoria' %}active{% endif %}">Registrar Asesoría</a>
+            <a href="{{ url_for('register_tutoria') }}" class="{% if active_page == 'register_tutoria' %}active{% endif %}">Registrar Tutoría</a>
+            <a href="{{ url_for('register_tutoria_grupal') }}" class="{% if active_page == 'register_tutoria_grupal' %}active{% endif %}">Registrar Tutoría Grupal</a>
+            <a href="{{ url_for('consultas') }}" class="{% if active_page == 'consultas' %}active{% endif %}">Consultas</a>
+            <a href="{{ url_for('lista_estudiantes') }}" class="{% if active_page == 'lista_estudiantes' %}active{% endif %}">📚 Estudiantes</a>
+            <a href="{{ url_for('dashboard_risk') }}" class="{% if active_page == 'dashboard_risk' %}active{% endif %}">🚨 Panel de Riesgo</a>
+            <a href="{{ url_for('report_period') }}" class="{% if active_page == 'report_period' %}active{% endif %}">📄 Reportes PDF</a>
         </nav>
     </header>
 

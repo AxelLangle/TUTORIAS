@@ -887,7 +887,8 @@ def lista_estudiantes():
         cuatrimestres=[c['cuatrimestre_actual'] for c in cuatrimestres],
         busqueda=busqueda,
         cuatrimestre_filtro=cuatrimestre,
-        nombre=session.get('nombre')
+        nombre=session.get('nombre'),
+        active_page='lista_estudiantes'
     )
 
 @app.route('/estudiantes/nuevo', methods=['GET', 'POST'])
