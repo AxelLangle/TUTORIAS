@@ -253,7 +253,8 @@ class RiskAssessmentEngine:
         motivos_principales = self._obtener_motivos_principales(tutorias)
         
         return {
-            'student_id': student_data.get('student_id', None),
+            # Usa student_id si viene explícito o cae en id genérico
+            'student_id': student_data.get('student_id') or student_data.get('id'),
             'matricula': student_data.get('matricula', 'N/A'),
             'nombre': student_data.get('nombre', 'N/A'),
             'apellido_p': student_data.get('apellido_p', 'N/A'),

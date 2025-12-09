@@ -4,374 +4,264 @@
 
 {% block content %}
 <style>
-    .history-header {
-        background: linear-gradient(135deg, #cc1313, #ff6b6b);
-        color: white;
-        padding: 25px;
-        border-radius: 10px;
-        margin-bottom: 25px;
+    :root {
+        --up-red: #c62828;
+        --up-red-light: #d32f2f;
+        --bg-gray: #f8f9fa;
+        --card-bg: #ffffff;
+        --border-color: #e0e0e0;
+        --risk-high-bg: #ffebee;
+        --risk-high-text: #c62828;
+        --risk-med-bg: #fff8e1;
+        --risk-med-text: #f57f17;
+        --risk-low-bg: #e8f5e9;
+        --risk-low-text: #2e7d32;
+        --blue-accent: #e3f2fd;
+        --blue-icon: #42a5f5;
     }
-    
-    .history-header h2 {
-        margin: 0 0 10px 0;
-        color: white;
+
+    body {
+        background: var(--bg-gray);
     }
-    
-    .student-info {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-top: 15px;
-    }
-    
-    .info-item {
-        background: rgba(255,255,255,0.1);
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 14px;
-    }
-    
-    .info-label {
-        font-weight: bold;
-        opacity: 0.9;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-        margin-bottom: 25px;
-    }
-    
-    .stat-card {
-        background: white;
+
+    .history-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
         padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        text-align: center;
-        border-left: 4px solid #cc1313;
-    }
-    
-    .stat-value {
-        font-size: 28px;
-        font-weight: bold;
-        color: #cc1313;
-    }
-    
-    .stat-label {
-        font-size: 12px;
-        color: #666;
-        margin-top: 5px;
-    }
-    
-    .alert-box {
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        border-left: 4px solid;
         display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .history-hero {
+        background: var(--up-red);
+        color: #fff;
+        padding: 25px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
         align-items: center;
     }
-    
-    .alert-critico {
-        background: #ffebee;
-        border-left-color: #cc1313;
-        color: #c62828;
+
+    .hero-text h2 { margin: 0; font-size: 24px; font-weight: 700; }
+    .hero-text p { margin: 6px 0 0 0; opacity: 0.85; font-size: 13px; }
+
+    .hero-details {
+        background: rgba(255,255,255,0.1);
+        padding: 14px;
+        border-radius: 8px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+        min-width: 320px;
     }
-    
-    .alert-advertencia {
-        background: #fff3e0;
-        border-left-color: #ff9800;
-        color: #e65100;
+
+    .hero-item { font-size: 13px; line-height: 1.4; }
+    .hero-item strong { display: block; font-size: 13px; }
+
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
     }
-    
-    .alert-positivo {
-        background: #e8f5e9;
-        border-left-color: #4caf50;
-        color: #2e7d32;
-    }
-    
-    .alert-icon {
-        font-size: 20px;
-        margin-right: 10px;
-    }
-    
-    .chart-container {
-        background: white;
-        padding: 20px;
+
+    .kpi-card {
+        background: var(--card-bg);
         border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        margin-bottom: 25px;
-        position: relative;
-        height: 300px;
-    }
-    
-    .cuatrimestre-section {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-        border-left: 5px solid #cc1313;
-    }
-    
-    .cuatrimestre-header {
+        padding: 18px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #f0f0f0;
+        border-left: 5px solid transparent;
     }
-    
-    .cuatrimestre-title {
-        font-size: 18px;
-        font-weight: bold;
-        color: #333;
-    }
-    
-    .cuatrimestre-stats {
-        display: flex;
-        gap: 20px;
-        font-size: 14px;
-    }
-    
-    .cuatrimestre-stat {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .stat-badge {
-        background: #e0f7fa;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-weight: bold;
-        color: #00838f;
-    }
-    
-    .tutorias-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-    }
-    
-    .tutorias-table th {
-        background: #f5f5f5;
-        padding: 12px;
-        text-align: left;
-        font-weight: bold;
-        border-bottom: 2px solid #ddd;
-        font-size: 13px;
-    }
-    
-    .tutorias-table td {
-        padding: 10px 12px;
-        border-bottom: 1px solid #eee;
-        font-size: 13px;
-    }
-    
-    .tutorias-table tr:hover {
-        background: #f9f9f9;
-    }
-    
-    .motivo-badge {
-        display: inline-block;
-        background: #e3f2fd;
-        color: #1565c0;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: bold;
-    }
-    
-    .action-buttons {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-    }
-    
-    .btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-        text-decoration: none;
-        display: inline-block;
-        transition: all 0.3s;
-    }
-    
-    .btn-primary {
-        background: #cc1313;
-        color: white;
-    }
-    
-    .btn-primary:hover {
-        background: #990000;
-        transform: translateY(-2px);
-    }
-    
-    .btn-secondary {
-        background: #666;
-        color: white;
-    }
-    
-    .btn-secondary:hover {
-        background: #444;
-        transform: translateY(-2px);
-    }
-    
-    .no-data {
-        text-align: center;
-        padding: 40px;
-        color: #999;
-    }
+
+    .kpi-card.red { border-left-color: var(--risk-high-text); }
+    .kpi-card.yellow { border-left-color: var(--risk-med-text); }
+    .kpi-card.green { border-left-color: var(--risk-low-text); }
+    .kpi-card.blue { border-left-color: var(--blue-icon); }
+
+    .kpi-content h3 { margin: 0; font-size: 13px; color: #666; font-weight: 600; }
+    .kpi-content .number { font-size: 30px; font-weight: 800; margin-top: 4px; }
+    .kpi-card.red .number { color: var(--risk-high-text); }
+    .kpi-card.yellow .number { color: var(--risk-med-text); }
+    .kpi-card.green .number { color: var(--risk-low-text); }
+    .kpi-card.blue .number { color: var(--blue-icon); }
+
+    .kpi-icon { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; }
+    .kpi-icon.red { background: var(--risk-high-bg); color: var(--risk-high-text); }
+    .kpi-icon.yellow { background: var(--risk-med-bg); color: var(--risk-med-text); }
+    .kpi-icon.green { background: var(--risk-low-bg); color: var(--risk-low-text); }
+    .kpi-icon.blue { background: var(--blue-accent); color: var(--blue-icon); }
+
+    .split-content { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 1100px) { .split-content { grid-template-columns: 1fr; } }
+
+    .card { background: var(--card-bg); border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 18px; border: 1px solid var(--border-color); }
+
+    .card h3 { margin: 0 0 12px 0; font-size: 16px; color: #333; }
+    .list-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .list-item:last-child { border-bottom: none; }
+
+    .alert-box { padding: 12px 14px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid; display: flex; gap: 10px; align-items: center; font-size: 13px; }
+    .alert-critico { background: var(--risk-high-bg); border-left-color: var(--risk-high-text); color: var(--risk-high-text); }
+    .alert-advertencia { background: var(--risk-med-bg); border-left-color: var(--risk-med-text); color: #e65100; }
+    .alert-positivo { background: var(--risk-low-bg); border-left-color: var(--risk-low-text); color: var(--risk-low-text); }
+
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .chart-container { height: 300px; position: relative; padding: 16px; }
+
+    .cuatrimestre-section { margin-top: 16px; }
+    .cuatrimestre-card { border-left: 5px solid var(--up-red); }
+    .cuatrimestre-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
+    .cuatrimestre-title { font-size: 16px; font-weight: 700; color: #333; }
+    .cuatrimestre-stats { display: flex; gap: 12px; font-size: 13px; }
+    .stat-badge { background: #e0f7fa; padding: 4px 10px; border-radius: 12px; font-weight: 700; color: #00838f; }
+
+    .tutorias-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    .tutorias-table th { background: #f5f5f5; padding: 10px; text-align: left; font-size: 12px; border-bottom: 2px solid #ddd; }
+    .tutorias-table td { padding: 9px 10px; border-bottom: 1px solid #eee; font-size: 12px; }
+    .motivo-badge { background: var(--blue-accent); color: #1565c0; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+
+    .action-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 10px; }
+    .btn { padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; text-decoration: none; display: inline-block; text-align: center; transition: all 0.2s; }
+    .btn-primary { background: var(--up-red-light); color: white; }
+    .btn-primary:hover { background: #b71c1c; }
+    .btn-secondary { background: #e0e0e0; color: #333; }
+    .btn-secondary:hover { background: #cfcfcf; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-danger:hover { background: #b42a37; }
+
+    .no-data { text-align: center; padding: 40px; color: #999; }
 </style>
 
-<div class="history-header">
-    <h2>📚 Historial Académico</h2>
-    <div class="student-info">
-        <div class="info-item">
-            <div class="info-label">Nombre</div>
-            <div>{{ student.nombre }} {{ student.apellido_p }} {{ student.apellido_m }}</div>
+<div class="history-wrapper">
+    <div class="history-hero">
+        <div class="hero-text">
+            <h2>📚 Historial Académico</h2>
+            <p>Perfil y evolución de {{ student.nombre }} {{ student.apellido_p }}</p>
         </div>
-        <div class="info-item">
-            <div class="info-label">Matrícula</div>
-            <div>{{ student.matricula }}</div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">Carrera</div>
-            <div>{{ student.carrera }}</div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">Cuatrimestre Actual</div>
-            <div>{{ student.cuatrimestre }}°</div>
+        <div class="hero-details">
+            <div class="hero-item"><strong>Matrícula</strong>{{ student.matricula }}</div>
+            <div class="hero-item"><strong>Carrera</strong>{{ student.carrera }}</div>
+            <div class="hero-item"><strong>Cuatrimestre</strong>{{ student.cuatrimestre }}°</div>
         </div>
     </div>
-</div>
 
-<!-- Estadísticas Generales -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-value">{{ analisis.total_tutorias }}</div>
-        <div class="stat-label">Total de Tutorías</div>
+    <div class="kpi-row">
+        <div class="kpi-card blue">
+            <div class="kpi-content"><h3>Total de Tutorías</h3><div class="number">{{ analisis.total_tutorias }}</div></div>
+            <div class="kpi-icon blue">📘</div>
+        </div>
+        <div class="kpi-card yellow">
+            <div class="kpi-content"><h3>Cuatrimestres</h3><div class="number">{{ analisis.cuatrimestres_registrados }}</div></div>
+            <div class="kpi-icon yellow">📅</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-content"><h3>Motivos Diferentes</h3><div class="number">{{ analisis.motivos_generales|length }}</div></div>
+            <div class="kpi-icon green">🎯</div>
+        </div>
+        <div class="kpi-card red">
+            <div class="kpi-content"><h3>Motivo Principal</h3><div class="number">{% if analisis.motivos_generales %}{{ analisis.motivos_generales|first }}{% else %}N/A{% endif %}</div></div>
+            <div class="kpi-icon red">⚠️</div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-value">{{ analisis.cuatrimestres_registrados }}</div>
-        <div class="stat-label">Cuatrimestres</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-value">{{ analisis.motivos_generales|length }}</div>
-        <div class="stat-label">Motivos Diferentes</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-value">{% if analisis.motivos_generales %}{{ analisis.motivos_generales|first }}{% else %}N/A{% endif %}</div>
-        <div class="stat-label">Motivo Principal</div>
-    </div>
-</div>
 
-<!-- Alertas -->
-{% if analisis.alertas %}
-<div style="margin-bottom: 25px;">
-    <h3 style="color: #cc1313; margin-bottom: 15px;">⚠️ Análisis de Patrones</h3>
-    {% for alerta in analisis.alertas %}
-    <div class="alert-box alert-{{ alerta.nivel }}">
-        <div class="alert-icon">
-            {% if alerta.nivel == 'crítico' %}🔴
-            {% elif alerta.nivel == 'advertencia' %}🟡
-            {% elif alerta.nivel == 'positivo' %}🟢
+    <div class="split-content">
+        <div class="left-col" style="display:flex; flex-direction:column; gap:16px;">
+            <div class="card">
+                <h3>Resumen del Estudiante</h3>
+                <div class="list-item"><span>Nombre</span><strong>{{ student.nombre }} {{ student.apellido_p }} {{ student.apellido_m }}</strong></div>
+                <div class="list-item"><span>Matrícula</span><strong>{{ student.matricula }}</strong></div>
+                <div class="list-item"><span>Carrera</span><strong>{{ student.carrera }}</strong></div>
+                <div class="list-item"><span>Cuatrimestre</span><strong>{{ student.cuatrimestre }}°</strong></div>
+            </div>
+
+            {% if analisis.alertas %}
+            <div class="card">
+                <h3>Alertas y Patrones</h3>
+                {% for alerta in analisis.alertas %}
+                <div class="alert-box alert-{{ alerta.nivel }}">
+                    <div class="alert-icon">{% if alerta.nivel == 'crítico' %}🔴{% elif alerta.nivel == 'advertencia' %}🟡{% else %}🟢{% endif %}</div>
+                    <div>{{ alerta.mensaje }}</div>
+                </div>
+                {% endfor %}
+            </div>
             {% endif %}
-        </div>
-        <div>{{ alerta.mensaje }}</div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
 
-<!-- Gráficos -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; margin-bottom: 25px;">
-    <div class="chart-container">
-        <h3 style="margin-top: 0; color: #333;">Tutorías por Cuatrimestre</h3>
-        <canvas id="chartFrecuencia"></canvas>
-    </div>
-    <div class="chart-container">
-        <h3 style="margin-top: 0; color: #333;">Motivos Principales</h3>
-        <canvas id="chartMotivos"></canvas>
-    </div>
-</div>
-
-<!-- Historial por Cuatrimestre -->
-<h3 style="color: #cc1313; margin-bottom: 20px;">📅 Historial Detallado por Cuatrimestre</h3>
-
-{% if analisis.por_cuatrimestre %}
-    {% for cuatrimestre, tutorias in analisis.por_cuatrimestre.items() %}
-    <div class="cuatrimestre-section">
-        <div class="cuatrimestre-header">
-            <div class="cuatrimestre-title">Cuatrimestre {{ cuatrimestre }}°</div>
-            <div class="cuatrimestre-stats">
-                <div class="cuatrimestre-stat">
-                    <span>Tutorías:</span>
-                    <span class="stat-badge">{{ tutorias|length }}</span>
+            <div class="card">
+                <h3>Acciones</h3>
+                {% set sid = student.student_id if student.student_id is defined else student.id %}
+                <div class="action-buttons">
+                    <a href="{{ url_for('editar_estudiante', id=sid) }}" class="btn btn-primary">✏️ Editar</a>
+                    <form method="POST" action="{{ url_for('eliminar_estudiante', id=sid) }}" onsubmit="return confirm('¿Está seguro de que desea eliminar a este estudiante y todas sus tutorías asociadas? Esta acción es irreversible.');" style="display: contents;">
+                        <button type="submit" class="btn btn-danger">🗑️ Eliminar</button>
+                    </form>
+                    <a href="{{ url_for('report_student', student_id=sid) }}" class="btn btn-primary">📥 PDF</a>
+                    <a href="{{ url_for('consultas') }}" class="btn btn-secondary">← Consultas</a>
                 </div>
-                {% if analisis.estadisticas_por_cuatrimestre[cuatrimestre].motivo_principal != 'N/A' %}
-                <div class="cuatrimestre-stat">
-                    <span>Motivo Principal:</span>
-                    <span class="stat-badge">{{ analisis.estadisticas_por_cuatrimestre[cuatrimestre].motivo_principal }}</span>
-                </div>
-                {% endif %}
             </div>
         </div>
-        
-        {% if tutorias %}
-        <table class="tutorias-table">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Motivo</th>
-                    <th>Descripción</th>
-                    <th>Observaciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for tutoría in tutorias %}
-                <tr>
-                    <td>{{ tutoría.fecha }}</td>
-                    <td><span class="motivo-badge">{{ tutoría.motivo }}</span></td>
-                    <td>{{ tutoría.descripcion[:50] }}{% if tutoría.descripcion|length > 50 %}...{% endif %}</td>
-                    <td>{{ tutoría.observaciones[:40] }}{% if tutoría.observaciones and tutoría.observaciones|length > 40 %}...{% endif %}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="no-data">No hay tutorías registradas para este cuatrimestre</div>
-        {% endif %}
-    </div>
-    {% endfor %}
-{% else %}
-<div class="no-data">
-    <p>No hay historial de tutorías para este estudiante</p>
-</div>
-{% endif %}
 
-<!-- Botones de Acción -->
-<div class="action-buttons">
-    {% set sid = student.student_id if student.student_id is defined else student.id %}
-    <a href="{{ url_for('editar_estudiante', id=sid) }}" class="btn btn-primary">
-        ✏️ Editar Estudiante
-    </a>
-    <form method="POST" action="{{ url_for('eliminar_estudiante', id=sid) }}" onsubmit="return confirm('¿Está seguro de que desea eliminar a este estudiante y todas sus tutorías asociadas? Esta acción es irreversible.');" style="display: inline;">
-        <button type="submit" class="btn btn-secondary" style="background: #dc3545;">
-            🗑️ Eliminar Estudiante
-        </button>
-    </form>
-    <a href="{{ url_for('report_student', student_id=sid) }}" class="btn btn-primary">
-        📥 Descargar Reporte PDF
-    </a>
-    <a href="{{ url_for('consultas') }}" class="btn btn-secondary">
-        ← Volver a Consultas
-    </a>
+        <div class="right-col" style="display:flex; flex-direction:column; gap:16px;">
+            <div class="charts-grid">
+                <div class="card chart-container">
+                    <h3 style="margin:0 0 10px 0;">Tutorías por Cuatrimestre</h3>
+                    <canvas id="chartFrecuencia"></canvas>
+                </div>
+                <div class="card chart-container">
+                    <h3 style="margin:0 0 10px 0;">Motivos Principales</h3>
+                    <canvas id="chartMotivos"></canvas>
+                </div>
+            </div>
+
+            <h3 style="color: #c62828; margin: 6px 0;">📅 Historial Detallado</h3>
+            {% if analisis.por_cuatrimestre %}
+                {% for cuatrimestre, tutorias in analisis.por_cuatrimestre.items() %}
+                <div class="card cuatrimestre-card">
+                    <div class="cuatrimestre-header">
+                        <div class="cuatrimestre-title">Cuatrimestre {{ cuatrimestre }}°</div>
+                        <div class="cuatrimestre-stats">
+                            <div class="stat-badge">Tutorías: {{ tutorias|length }}</div>
+                            {% if analisis.estadisticas_por_cuatrimestre[cuatrimestre].motivo_principal != 'N/A' %}
+                            <div class="stat-badge">Motivo: {{ analisis.estadisticas_por_cuatrimestre[cuatrimestre].motivo_principal }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if tutorias %}
+                    <table class="tutorias-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Motivo</th>
+                                <th>Descripción</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tutoría in tutorias %}
+                            <tr>
+                                <td>{{ tutoría.fecha }}</td>
+                                <td><span class="motivo-badge">{{ tutoría.motivo }}</span></td>
+                                <td>{{ tutoría.descripcion[:60] }}{% if tutoría.descripcion|length > 60 %}...{% endif %}</td>
+                                <td>{{ tutoría.observaciones[:50] }}{% if tutoría.observaciones and tutoría.observaciones|length > 50 %}...{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="no-data">No hay tutorías registradas para este cuatrimestre</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="card"><div class="no-data">No hay historial de tutorías para este estudiante</div></div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
 <!-- Scripts para gráficos -->
