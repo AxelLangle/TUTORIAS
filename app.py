@@ -6,7 +6,7 @@ from functools import wraps
 from pdf_generator import PDFReportGenerator
 from academic_history import AcademicHistoryAnalyzer
 from risk_assessment import RiskAssessmentEngine
-from utils import obtener_cuatrimestres_disponibles, obtener_nombre_periodo, validar_cuatrimestre, obtener_grupos_disponibles, obtener_carreras_por_programa, decodificar_grupo, PROGRAMA_EDUCATIVO_1, PROGRAMA_EDUCATIVO_2
+from utils import obtener_cuatrimestres_disponibles, obtener_nombre_periodo, validar_cuatrimestre, obtener_grupos_disponibles, obtener_carreras_por_programa, obtener_todas_las_carreras, decodificar_grupo, PROGRAMA_EDUCATIVO_1, PROGRAMA_EDUCATIVO_2
 
 DATABASE = 'asesorias.db'
 app = Flask(__name__)
@@ -939,6 +939,12 @@ def editar_estudiante(id):
     
     if request.method == 'POST':
         data = request.form
+        
+        # Obtener el nombre completo de la carrera
+        carrera_sigla = data.get('carrera')
+        programa_id = int(data.get('programa_educativo', 2))
+        carreras_map = obtener_carreras_por_programa(programa_id)
+        carrera_nombre = carreras_map.get(carrera_sigla, carrera_sigla) # Fallback a sigla si no se encuentra
         
         try:
             db.execute(
