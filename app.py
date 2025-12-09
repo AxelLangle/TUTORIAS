@@ -716,7 +716,8 @@ def student_history(student_id):
         'apellido_m': estudiante['apellido_m'],
         'matricula': estudiante['matricula'],
         'carrera': estudiante['carrera'] or 'No especificada',
-        'cuatrimestre': estudiante['cuatrimestre_actual']
+        'cuatrimestre': estudiante['cuatrimestre_actual'],
+        'id': estudiante['id']
     }
     
     return render_template(

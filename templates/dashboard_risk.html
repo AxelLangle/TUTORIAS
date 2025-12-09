@@ -504,7 +504,12 @@
             <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="risk-item alto">
                 <div>
                     <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                    <div class="matricula">ID: {{ estudiante.matricula }}</div>
+                    <div class="matricula">ID: {{ estudiante.matricula }} | Carrera: {{ estudiante.carrera }} | Cuatrimestre: {{ estudiante.cuatrimestre_actual }}</div>
+                    <div class="motivos-list">
+                        {% for motivo in estudiante.motivos_riesgo %}
+                        <span class="motivo-tag">{{ motivo }}</span>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div class="risk-score-badge alto">
                     Riesgo: {{ estudiante.puntuacion }}%
@@ -527,7 +532,12 @@
             <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="risk-item medio">
                 <div>
                     <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                    <div class="matricula">ID: {{ estudiante.matricula }}</div>
+                    <div class="matricula">ID: {{ estudiante.matricula }} | Carrera: {{ estudiante.carrera }} | Cuatrimestre: {{ estudiante.cuatrimestre_actual }}</div>
+                    <div class="motivos-list">
+                        {% for motivo in estudiante.motivos_riesgo %}
+                        <span class="motivo-tag">{{ motivo }}</span>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div class="risk-score-badge medio">
                     Riesgo: {{ estudiante.puntuacion }}%
@@ -550,7 +560,12 @@
             <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="risk-item bajo">
                 <div>
                     <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                    <div class="matricula">ID: {{ estudiante.matricula }}</div>
+                    <div class="matricula">ID: {{ estudiante.matricula }} | Carrera: {{ estudiante.carrera }} | Cuatrimestre: {{ estudiante.cuatrimestre_actual }}</div>
+                    <div class="motivos-list">
+                        {% for motivo in estudiante.motivos_riesgo %}
+                        <span class="motivo-tag">{{ motivo }}</span>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div class="risk-score-badge bajo">
                     Riesgo: {{ estudiante.puntuacion }}%
