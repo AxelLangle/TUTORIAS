@@ -5,16 +5,16 @@
 {% block content %}
 <style>
     .dashboard-header {
-        background: linear-gradient(135deg, #cc1313, #ff6b6b);
-        color: white;
-        padding: 25px;
-        border-radius: 10px;
+        /* Eliminado el fondo degradado para usar el color de fondo de la página */
+        color: #f0f0f0;
+        padding: 0; /* Eliminado padding para que solo sea el título */
         margin-bottom: 25px;
     }
     
     .dashboard-header h2 {
         margin: 0 0 10px 0;
-        color: white;
+        color: #f0f0f0;
+        font-size: 24px;
     }
     
     .dashboard-header p {
@@ -31,12 +31,12 @@
     }
     
     .stat-card {
-        background: white;
+        background: #2a2a4a; /* Fondo de tarjeta oscuro */
         padding: 20px;
         border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        text-align: center;
-        border-left: 4px solid;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        text-align: left; /* Alineación a la izquierda como en la imagen */
+        border: none; /* Eliminado el borde izquierdo */
     }
     
     .stat-card.alto {
@@ -52,9 +52,10 @@
     }
     
     .stat-value {
-        font-size: 32px;
+        font-size: 36px;
         font-weight: bold;
-        margin: 10px 0;
+        margin: 0;
+        color: #f0f0f0;
     }
     
     .stat-value.alto {
@@ -70,9 +71,10 @@
     }
     
     .stat-label {
-        font-size: 12px;
-        color: #666;
-        margin-top: 5px;
+        font-size: 14px;
+        color: #b0b0c0; /* Color de etiqueta más claro */
+        margin-top: 0;
+        margin-bottom: 10px;
     }
     
     .stat-percentage {
@@ -82,10 +84,10 @@
     }
     
     .filters-section {
-        background: white;
+        background: #2a2a4a; /* Fondo de filtros oscuro */
         padding: 20px;
         border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         margin-bottom: 25px;
     }
     
@@ -105,15 +107,17 @@
         font-weight: bold;
         margin-bottom: 5px;
         font-size: 14px;
-        color: #333;
+        color: #f0f0f0; /* Texto de etiqueta claro */
     }
     
     .filter-group input,
     .filter-group select {
-        padding: 8px;
-        border: 1px solid #ddd;
+        padding: 10px;
+        border: 1px solid #444;
         border-radius: 5px;
         font-size: 14px;
+        background: #1e1e2f; /* Fondo de input oscuro */
+        color: #f0f0f0; /* Texto de input claro */
     }
     
     .filter-buttons {
@@ -131,22 +135,22 @@
     }
     
     .btn-primary {
-        background: #cc1313;
+        background: #4a7cff; /* Azul para el botón principal */
         color: white;
     }
     
     .btn-primary:hover {
-        background: #990000;
+        background: #3a6cd0;
         transform: translateY(-2px);
     }
     
     .btn-secondary {
-        background: #666;
+        background: #3a3a5a; /* Gris oscuro para el botón secundario */
         color: white;
     }
     
     .btn-secondary:hover {
-        background: #444;
+        background: #4a4a6a;
         transform: translateY(-2px);
     }
     
@@ -159,6 +163,8 @@
         grid-template-columns: 1fr 2fr; /* 1/3 para filtros/gráfico, 2/3 para tablas */
         gap: 25px;
         margin-bottom: 25px;
+        /* Añadir altura mínima para que el scroll funcione */
+        min-height: 500px; 
     }
     
     .left-column {
@@ -171,6 +177,10 @@
         display: flex;
         flex-direction: column;
         gap: 25px;
+        /* Hacer la columna de tablas scrolleable */
+        max-height: 70vh; /* Altura máxima visible */
+        overflow-y: auto; /* Habilitar scroll vertical */
+        padding-right: 10px; /* Espacio para la barra de scroll */
     }
     
     @media (max-width: 1200px) {
@@ -183,11 +193,10 @@
         font-size: 18px;
         font-weight: bold;
         margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 3px solid;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        padding-bottom: 0;
+        border-bottom: none;
+        display: block; /* Para que ocupe todo el ancho */
+        color: #f0f0f0;
     }
     
     .risk-section-title.alto {
@@ -201,45 +210,79 @@
     }
     
     .risk-section-title.bajo {
-        color: #4caf50;
-        border-bottom-color: #4caf50;
+        color: #f0f0f0;
+    }
+    
+    /* Nuevos estilos para el diseño de lista de riesgo */
+    .risk-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .risk-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: #2a2a4a; /* Fondo de tarjeta oscuro */
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        text-decoration: none;
+        color: inherit;
+        transition: background 0.2s;
+    }
+    
+    .risk-item:hover {
+        background: #3a3a5a;
+    }
+    
+    .risk-score-badge {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 12px;
+    }
+    
+    .risk-score-badge.alto {
+        background: #990000; /* Rojo oscuro */
+        color: white;
+    }
+    
+    .risk-score-badge.medio {
+        background: #e65100; /* Naranja oscuro */
+        color: white;
+    }
+    
+    .risk-score-badge.bajo {
+        background: #2e7d32; /* Verde oscuro */
+        color: white;
     }
     
     .risk-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        display: none; /* Ocultar la tabla ya que estamos usando el diseño de lista */
     }
     
     .risk-table th {
-        background: #f5f5f5;
-        padding: 15px;
-        text-align: left;
-        font-weight: bold;
-        border-bottom: 2px solid #ddd;
-        font-size: 13px;
+        display: none;
     }
     
     .risk-table td {
-        padding: 12px 15px;
-        border-bottom: 1px solid #eee;
-        font-size: 13px;
+        display: none;
     }
     
     .risk-table tr:hover {
-        background: #f9f9f9;
+        background: #3a3a5a;
     }
     
     .student-name {
         font-weight: bold;
-        color: #333;
+        color: #f0f0f0;
+        font-size: 16px;
     }
     
     .matricula {
-        color: #666;
+        color: #b0b0c0;
         font-size: 12px;
     }
     
@@ -308,7 +351,7 @@
     }
     
     .action-link {
-        color: #cc1313;
+        color: #4a7cff;
         text-decoration: none;
         font-weight: bold;
         cursor: pointer;
@@ -328,10 +371,10 @@
     }
     
     .chart-container {
-        background: white;
+        background: #2a2a4a;
         padding: 20px;
         border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         margin-bottom: 25px;
         position: relative;
         height: 300px;
@@ -431,54 +474,22 @@
     {% if alto_riesgo %}
     <div class="risk-section">
         <div class="risk-section-title alto">
-            <span>🔴 ALTO RIESGO - REQUIERE ATENCIÓN INMEDIATA</span>
-            <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ alto_riesgo|length }} estudiante(s)</span>
+            Sección de estudiantes alto riesgo
         </div>
         
-        <table class="risk-table">
-            <thead>
-                <tr>
-                    <th>Matrícula / Nombre</th>
-                    <th>Carrera</th>
-                    <th>Cuatrimestre</th>
-                    <th>Motivos Principales</th>
-                    <th>Tutorías</th>
-                    <th>Puntuación</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for estudiante in alto_riesgo %}
-                <tr>
-                    <td>
-                        <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                        <div class="matricula">{{ estudiante.matricula }}</div>
-                    </td>
-                    <td>{{ estudiante.carrera }}</td>
-                    <td>{{ estudiante.cuatrimestre }}°</td>
-                    <td>
-                        <div class="motivos-list">
-                            {% for motivo in estudiante.motivos_frecuentes[:2] %}
-                            <span class="motivo-tag">{{ motivo }}</span>
-                            {% endfor %}
-                        </div>
-                    </td>
-                    <td>{{ estudiante.num_tutorias }}</td>
-                    <td>
-                        <div class="score-bar">
-                            <span class="score-value">{{ estudiante.puntuacion }}</span>
-                            <div class="score-visual">
-                                <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%; background: #cc1313;"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="risk-list">
+            {% for estudiante in alto_riesgo %}
+            <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="risk-item alto">
+                <div>
+                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
+                    <div class="matricula">ID: {{ estudiante.matricula }}</div>
+                </div>
+                <div class="risk-score-badge alto">
+                    Riesgo: {{ estudiante.puntuacion }}%
+                </div>
+            </a>
+            {% endfor %}
+        </div>
     </div>
     {% endif %}
 
@@ -486,54 +497,22 @@
     {% if medio_riesgo %}
     <div class="risk-section">
         <div class="risk-section-title medio">
-            <span>🟡 MEDIO RIESGO - MONITOREO REQUERIDO</span>
-            <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ medio_riesgo|length }} estudiante(s)</span>
+            Sección de estudiantes medio riesgo
         </div>
         
-        <table class="risk-table">
-            <thead>
-                <tr>
-                    <th>Matrícula / Nombre</th>
-                    <th>Carrera</th>
-                    <th>Cuatrimestre</th>
-                    <th>Motivos Principales</th>
-                    <th>Tutorías</th>
-                    <th>Puntuación</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for estudiante in medio_riesgo %}
-                <tr>
-                    <td>
-                        <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                        <div class="matricula">{{ estudiante.matricula }}</div>
-                    </td>
-                    <td>{{ estudiante.carrera }}</td>
-                    <td>{{ estudiante.cuatrimestre }}°</td>
-                    <td>
-                        <div class="motivos-list">
-                            {% for motivo in estudiante.motivos_frecuentes[:2] %}
-                            <span class="motivo-tag">{{ motivo }}</span>
-                            {% endfor %}
-                        </div>
-                    </td>
-                    <td>{{ estudiante.num_tutorias }}</td>
-                    <td>
-                        <div class="score-bar">
-                            <span class="score-value">{{ estudiante.puntuacion }}</span>
-                            <div class="score-visual">
-                                <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%; background: #ff9800;"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="risk-list">
+            {% for estudiante in medio_riesgo %}
+            <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="risk-item medio">
+                <div>
+                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
+                    <div class="matricula">ID: {{ estudiante.matricula }}</div>
+                </div>
+                <div class="risk-score-badge medio">
+                    Riesgo: {{ estudiante.puntuacion }}%
+                </div>
+            </a>
+            {% endfor %}
+        </div>
     </div>
     {% endif %}
 
@@ -541,54 +520,22 @@
     {% if bajo_riesgo %}
     <div class="risk-section">
         <div class="risk-section-title bajo">
-            <span>🟢 BAJO RIESGO - DESEMPEÑO SATISFACTORIO</span>
-            <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ bajo_riesgo|length }} estudiante(s)</span>
+            Sección de estudiantes bajo riesgo
         </div>
         
-        <table class="risk-table">
-            <thead>
-                <tr>
-                    <th>Matrícula / Nombre</th>
-                    <th>Carrera</th>
-                    <th>Cuatrimestre</th>
-                    <th>Motivos Principales</th>
-                    <th>Tutorías</th>
-                    <th>Puntuación</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for estudiante in bajo_riesgo %}
-                <tr>
-                    <td>
-                        <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                        <div class="matricula">{{ estudiante.matricula }}</div>
-                    </td>
-                    <td>{{ estudiante.carrera }}</td>
-                    <td>{{ estudiante.cuatrimestre }}°</td>
-                    <td>
-                        <div class="motivos-list">
-                            {% for motivo in estudiante.motivos_frecuentes[:2] %}
-                            <span class="motivo-tag">{{ motivo }}</span>
-                            {% endfor %}
-                        </div>
-                    </td>
-                    <td>{{ estudiante.num_tutorias }}</td>
-                    <td>
-                        <div class="score-bar">
-                            <span class="score-value">{{ estudiante.puntuacion }}</span>
-                            <div class="score-visual">
-                                <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%; background: #4caf50;"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="risk-list">
+            {% for estudiante in bajo_riesgo %}
+            <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="risk-item bajo">
+                <div>
+                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
+                    <div class="matricula">ID: {{ estudiante.matricula }}</div>
+                </div>
+                <div class="risk-score-badge bajo">
+                    Riesgo: {{ estudiante.puntuacion }}%
+                </div>
+            </a>
+            {% endfor %}
+        </div>
     </div>
     {% endif %}
 
