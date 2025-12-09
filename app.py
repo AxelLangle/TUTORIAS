@@ -896,7 +896,7 @@ def nuevo_estudiante():
         existe = db.execute("SELECT id FROM estudiantes WHERE matricula = ?", (data.get('matricula'),)).fetchone()
         if existe:
             flash(f"Ya existe un estudiante con la matrícula {data.get('matricula')}.", "error")
-            return redirect(url_for(\'nuevo_estudiante\'))
+            return redirect(url_for('nuevo_estudiante'))
 
         # Obtener el nombre completo de la carrera
         carrera_sigla = data.get('carrera')
