@@ -320,6 +320,12 @@ def register_tutoria():
             estudiante = db.execute("SELECT * FROM estudiantes WHERE matricula = ?", (matricula,)).fetchone()
             
             if not estudiante:
+                # Obtener el nombre completo de la carrera
+                carrera_sigla = data.get('carrera')
+                # Asumimos que la sigla es suficiente para determinar el programa (simplificación)
+                carreras_map = obtener_todas_las_carreras()
+                carrera_nombre = carreras_map.get(carrera_sigla, carrera_sigla) # Fallback a sigla si no se encuentra
+                
                 # Crear nuevo estudiante
                 db.execute('''
                     INSERT INTO estudiantes (matricula, nombre, apellido_p, apellido_m, cuatrimestre_actual, carrera, created_at, updated_at)
@@ -330,7 +336,7 @@ def register_tutoria():
                     data.get('apellido_p'),
                     data.get('apellido_m'),
                     data.get('cuatrimestre'),
-                    data.get('carrera', 'No especificada'),
+                    carrera_nombre, # Usar el nombre completo
                     datetime.utcnow().isoformat(),
                     datetime.utcnow().isoformat()
                 ))
@@ -930,6 +936,23 @@ def nuevo_estudiante():
             return redirect(url_for('nuevo_estudiante'))
     
     return render_template('nuevo_estudiante.html', nombre=session.get('nombre'))
+
+@app.route('/estudiantes/eliminar/<int:id>', methods=['POST'])
+@login_required
+def eliminar_estudiante(id):
+    """Elimina un estudiante y sus tutorías asociadas"""
+    db = get_db()
+    try:
+        # 1. Eliminar las tutorías asociadas al estudiante
+        db.execute("DELETE FROM tutoria WHERE estudiante_id = ?", (id,))
+        # 2. Eliminar al estudiante
+        db.execute("DELETE FROM estudiantes WHERE id = ?", (id,))
+        db.commit()
+        flash("Estudiante y sus tutorías eliminados exitosamente.", "success")
+    except Exception as e:
+        flash(f"Error al eliminar estudiante: {str(e)}", "error")
+    
+    return redirect(url_for('lista_estudiantes'))
 
 @app.route('/estudiantes/editar/<int:id>', methods=['GET', 'POST'])
 @login_required

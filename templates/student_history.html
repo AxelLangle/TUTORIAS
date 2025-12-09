@@ -357,7 +357,15 @@
 
 <!-- Botones de Acción -->
 <div class="action-buttons">
-    <a href="{{ url_for('report_student', student_id=analisis.por_cuatrimestre|first if analisis.por_cuatrimestre else 1) }}" class="btn btn-primary">
+    <a href="{{ url_for('editar_estudiante', id=student.student_id) }}" class="btn btn-primary">
+        ✏️ Editar Estudiante
+    </a>
+    <form method="POST" action="{{ url_for('eliminar_estudiante', id=student.student_id) }}" onsubmit="return confirm('¿Está seguro de que desea eliminar a este estudiante y todas sus tutorías asociadas? Esta acción es irreversible.');" style="display: inline;">
+        <button type="submit" class="btn btn-secondary" style="background: #dc3545;">
+            🗑️ Eliminar Estudiante
+        </button>
+    </form>
+    <a href="{{ url_for('report_student', student_id=student.student_id) }}" class="btn btn-primary">
         📥 Descargar Reporte PDF
     </a>
     <a href="{{ url_for('consultas') }}" class="btn btn-secondary">
