@@ -659,7 +659,7 @@ def dashboard_risk():
     bajo_riesgo = [e for e in evaluaciones_filtradas if e['clasificacion']['nivel'] == 'bajo']
     
     # Obtener carreras y cuatrimestres únicos para filtros
-    carreras = sorted(set(e['carrera'] for e in evaluaciones if e['carrera'] != 'N/A'))
+    
     cuatrimestres = sorted(set(e['cuatrimestre'] for e in evaluaciones if e['cuatrimestre'] != 'N/A'), 
                           key=lambda x: int(x) if x.isdigit() else 0)
     
@@ -669,7 +669,7 @@ def dashboard_risk():
         alto_riesgo=alto_riesgo,
         medio_riesgo=medio_riesgo,
         bajo_riesgo=bajo_riesgo,
-        carreras=carreras,
+        carreras=obtener_todas_las_carreras(),
         cuatrimestres=cuatrimestres,
         filtros=filtros,
         nombre=session.get('nombre')
