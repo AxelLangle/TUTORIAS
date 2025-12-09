@@ -281,7 +281,7 @@ def register_asesoria():
     
     # Obtener lista de estudiantes para el select
     estudiantes = db.execute("SELECT * FROM estudiantes ORDER BY apellido_p, apellido_m, nombre").fetchall()
-    return render_template('register_asesoria.html', nombre=session.get('nombre'), estudiantes=estudiantes, periodo_actual=obtener_nombre_periodo())
+    return render_template('register_asesoria.html', nombre=session.get('nombre'), estudiantes=estudiantes, periodo_actual=obtener_nombre_periodo(), active_page='register_asesoria')
 
 # ---------------------------
 # Registro de Tutorías
@@ -360,7 +360,7 @@ def register_tutoria():
     
     # Obtener lista de estudiantes para el select
     estudiantes = db.execute("SELECT * FROM estudiantes ORDER BY apellido_p, apellido_m, nombre").fetchall()
-    return render_template('register_tutoria.html', nombre=session.get('nombre'), estudiantes=estudiantes)
+    return render_template('register_tutoria.html', nombre=session.get('nombre'), estudiantes=estudiantes, active_page='register_tutoria')
 
 # ---------------------------
 # Registro de Tutorías Grupales
@@ -382,7 +382,9 @@ def register_tutoria_grupal():
         db.commit()
         flash('Tutoría grupal registrada correctamente.', 'success')
         return redirect(url_for('consultas'))
-    return render_template('register_tutoria_grupal.html', nombre=session.get('nombre'))
+    cuatrimestres_disponibles = obtener_cuatrimestres_disponibles()
+    
+    return render_template('register_tutoria_grupal.html', nombre=session.get('nombre'), cuatrimestres_disponibles=cuatrimestres_disponibles, active_page='register_tutoria_grupal')
 
 # ---------------------------
 # Consultas
