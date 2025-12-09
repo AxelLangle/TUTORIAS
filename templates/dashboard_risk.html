@@ -4,620 +4,456 @@
 
 {% block content %}
 <style>
-    .dashboard-header {
-        background: #cc1313; /* Fondo rojo */
-        color: white;
+    /* Variables de colores exactos de la imagen */
+    :root {
+        --up-red: #c62828;       /* Rojo Oscuro Header */
+        --up-red-light: #d32f2f; /* Rojo Botón */
+        --bg-gray: #f8f9fa;      /* Fondo General */
+        --card-bg: #ffffff;
+        --border-color: #e0e0e0;
+        
+        /* Colores de Estado */
+        --risk-high-bg: #ffebee;
+        --risk-high-text: #c62828;
+        --risk-high-icon: #ef5350;
+        
+        --risk-med-bg: #fff8e1;
+        --risk-med-text: #f57f17;
+        --risk-med-icon: #ffca28;
+        
+        --risk-low-bg: #e8f5e9;
+        --risk-low-text: #2e7d32;
+        --risk-low-icon: #66bb6a;
+        
+        --blue-accent: #e3f2fd;
+        --blue-icon: #42a5f5;
+    }
+
+    body {
+        background-color: var(--bg-gray);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Contenedor Principal */
+    .dashboard-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
         padding: 20px;
-        margin-bottom: 25px;
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column; /* Asegura que todo vaya de arriba a abajo */
+        gap: 20px;
     }
-    
-    .dashboard-header h2 {
-        margin: 0;
+
+    /* --- 1. HEADER ROJO (Ancho Completo) --- */
+    .risk-header {
+        background-color: var(--up-red);
         color: white;
-        font-size: 24px;
-    }
-    
-    .dashboard-header p {
-        margin: 5px 0;
-        font-size: 14px;
-        opacity: 0.9;
-        color: white;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 15px;
-        margin-bottom: 25px;
-    }
-    
-    .stat-card {
-        background: white;
-        padding: 15px;
+        padding: 25px 30px;
         border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        text-align: left;
-        border: 1px solid #eee;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    
-    .stat-card.alto {
-        border-left-color: #cc1313;
-    }
-    
-    .stat-card.medio {
-        border-left-color: #ff9800;
-    }
-    
-    .stat-card.bajo {
-        border-left-color: #4caf50;
-    }
-    
-    .stat-value {
-        font-size: 28px; /* Más pequeño */
-        font-weight: bold;
+
+    .header-titles h2 {
         margin: 0;
-        color: #333;
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
     }
-    
-    .stat-value.alto {
-        color: #cc1313;
+
+    .header-titles p {
+        margin: 5px 0 0 0;
+        font-size: 13px;
+        opacity: 0.8;
+        color: white;
     }
-    
-    .stat-value.medio {
-        color: #ff9800;
+
+    .header-objective {
+        background-color: rgba(0, 0, 0, 0.2); /* Fondo oscuro semitransparente */
+        padding: 15px;
+        border-radius: 6px;
+        display: flex;
+        gap: 15px;
+        max-width: 450px;
+        align-items: flex-start;
     }
-    
-    .stat-value.bajo {
-        color: #4caf50;
+
+    .info-icon {
+        font-size: 24px;
+        font-weight: bold;
     }
-    
-    .stat-label {
+
+    /* --- 2. TARJETAS DE ESTADÍSTICAS (Fila Superior) --- */
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4 Columnas iguales */
+        gap: 20px;
+    }
+
+    .kpi-card {
+        background: var(--card-bg);
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-left: 5px solid transparent; /* Borde izquierdo de color */
+    }
+
+    /* Colores específicos KPI */
+    .kpi-card.blue { border-left-color: #2196f3; }
+    .kpi-card.red { border-left-color: var(--risk-high-text); }
+    .kpi-card.yellow { border-left-color: #ffb300; }
+    .kpi-card.green { border-left-color: var(--risk-low-text); }
+
+    .kpi-content h3 {
+        margin: 0;
         font-size: 14px;
         color: #666;
-        margin-top: 0;
-        margin-bottom: 5px;
+        font-weight: 600;
     }
-    
-    .stat-percentage {
-        font-size: 14px;
-        color: #999;
+
+    .kpi-content .number {
+        font-size: 32px;
+        font-weight: 700;
         margin-top: 5px;
+        line-height: 1;
     }
-    
-    .filters-section {
-        background: white;
+
+    .kpi-card.red .number { color: var(--risk-high-text); }
+    .kpi-card.yellow .number { color: #f57f17; }
+    .kpi-card.green .number { color: var(--risk-low-text); }
+
+    .kpi-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Iconos circulares */
+    .kpi-icon.blue { background: var(--blue-accent); color: var(--blue-icon); }
+    .kpi-icon.red { background: var(--risk-high-bg); color: var(--risk-high-icon); }
+    .kpi-icon.yellow { background: var(--risk-med-bg); color: var(--risk-med-icon); }
+    .kpi-icon.green { background: var(--risk-low-bg); color: var(--risk-low-icon); }
+
+
+    /* --- 3. DISEÑO DIVIDIDO (Filtros Izq | Listas Der) --- */
+    .split-content {
+        display: grid;
+        grid-template-columns: 280px 1fr; /* Columna fija izq, resto der */
+        gap: 20px;
+        align-items: start;
+    }
+
+    /* Barra Lateral de Filtros */
+    .filters-sidebar {
+        background: var(--card-bg);
         padding: 20px;
         border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        margin-bottom: 25px;
-        border: 1px solid #eee;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    
-    .filters-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
+
+    .filters-sidebar h3 {
+        margin-top: 0;
+        font-size: 18px;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .filter-group {
         margin-bottom: 15px;
     }
-    
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-    }
-    
+
     .filter-group label {
-        font-weight: bold;
+        display: block;
+        font-size: 13px;
+        color: #666;
         margin-bottom: 5px;
-        font-size: 14px;
-        color: #333; /* Texto de etiqueta oscuro */
+        font-weight: 600;
     }
-    
-    .filter-group input,
-    .filter-group select {
+
+    .filter-group select, .filter-group input {
+        width: 100%;
         padding: 10px;
         border: 1px solid #ddd;
-        border-radius: 5px;
+        border-radius: 6px;
         font-size: 14px;
-        background: white; /* Fondo de input claro */
-        color: #333; /* Texto de input oscuro */
+        box-sizing: border-box; /* Importante para que no se salga */
     }
-    
-    .filter-buttons {
-        display: flex;
-        gap: 10px;
-    }
-    
-    .btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: all 0.3s;
-    }
-    
-    .btn-primary {
-        background: #cc1313; /* Rojo original */
-        color: white;
-    }
-    
-    .btn-primary:hover {
-        background: #990000; /* Rojo oscuro original */
-        transform: translateY(-2px);
-    }
-    
-    .btn-secondary {
-        background: #666; /* Gris original */
-        color: white;
-    }
-    
-    .btn-secondary:hover {
-        background: #444; /* Gris oscuro original */
-        transform: translateY(-2px);
-    }
-    
-    .risk-section {
-        margin-bottom: 25px;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    .main-grid {
+
+    .filter-actions {
         display: grid;
-        grid-template-columns: 1fr 2fr; /* 1/3 para filtros/gráfico, 2/3 para tablas */
-        gap: 25px;
-        margin-bottom: 25px;
-        /* Añadir altura mínima para que el scroll funcione */
-        min-height: 500px; 
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 20px;
     }
-    
-    .left-column {
+
+    .btn-apply {
+        background: var(--up-red-light);
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-clear {
+        background: #e0e0e0;
+        color: #333;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    /* Listas de Riesgo (Derecha) */
+    .risk-lists-wrapper {
         display: flex;
         flex-direction: column;
-        gap: 25px;
+        gap: 20px;
     }
-    
-    .right-column {
-        display: flex;
-        flex-direction: column;
-        gap: 25px;
-        /* Hacer la columna de tablas scrolleable */
-        max-height: 70vh; /* Altura máxima visible */
-        overflow-y: auto; /* Habilitar scroll vertical */
-        padding-right: 10px; /* Espacio para la barra de scroll */
+
+    .risk-section-card {
+        background: var(--card-bg);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border-left: 5px solid #ccc;
+        min-height: 180px; /* Altura mínima para parecerse a la imagen */
     }
-    
-    @media (max-width: 1200px) {
-        .main-grid {
-            grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
-        }
-    }
-    
-    .risk-section-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 0;
-        padding: 15px;
-        border-radius: 8px 8px 0 0;
+
+    .risk-section-card.high { border-left-color: var(--risk-high-text); }
+    .risk-section-card.medium { border-left-color: #ffb300; }
+    .risk-section-card.low { border-left-color: var(--risk-low-text); }
+
+    .section-header {
+        padding: 15px 20px;
         display: flex;
         align-items: center;
         gap: 10px;
+        font-weight: 700;
+        font-size: 16px;
         color: #333;
-        background: white;
-        border-left: 5px solid;
     }
-    
-    .risk-section-title.alto {
-        color: #333;
-        border-left-color: #cc1313;
-    }
-    
-    .risk-section-title.medio {
-        color: #333;
-        border-left-color: #ff9800;
-    }
-    
-    .risk-section-title.bajo {
-        color: #333;
-        border-left-color: #4caf50;
-    }
-    
-    /* Nuevos estilos para el diseño de lista de riesgo */
-    .risk-list {
+
+    .section-header svg { width: 20px; height: 20px; }
+    .section-header.high svg { color: var(--risk-high-text); }
+    .section-header.medium svg { color: #ffb300; }
+    .section-header.low svg { color: var(--risk-low-text); }
+
+    .empty-message {
         display: flex;
-        flex-direction: column;
-        gap: 0; /* Eliminar el gap entre items */
-        background: white;
-        border-radius: 0 0 8px 8px;
-        border: 1px solid #eee;
-        border-top: none;
-        margin-bottom: 25px;
+        justify-content: center;
+        align-items: center;
+        height: 100px;
+        color: #999;
+        font-size: 14px;
     }
-    
-    .risk-item {
+
+    /* Estilo de lista de estudiantes si hay datos */
+    .student-row {
+        padding: 12px 20px;
+        border-top: 1px solid #eee;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 15px 20px;
-        background: white;
-        border-radius: 0;
-        box-shadow: none;
-        text-decoration: none;
-        color: inherit;
-        transition: background 0.2s;
-        border-bottom: 1px solid #eee;
     }
-    
-    .risk-item:hover {
-        background: #f0f0f0;
+    .student-row:hover { background-color: #f9f9f9; }
+    .student-info strong { display: block; color: #333; }
+    .student-info span { font-size: 12px; color: #777; }
+    .btn-link { color: #2196f3; text-decoration: none; font-size: 13px; font-weight: 600; }
+
+    /* Responsivo */
+    @media (max-width: 1024px) {
+        .split-content { grid-template-columns: 1fr; }
+        .kpi-row { grid-template-columns: 1fr 1fr; }
     }
-    
-    .risk-score-badge {
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-weight: bold;
-        font-size: 12px;
-    }
-    
-    .risk-score-badge.alto {
-        background: #cc1313; /* Rojo original */
-        color: white;
-    }
-    
-    .risk-score-badge.medio {
-        background: #ff9800; /* Naranja original */
-        color: white;
-    }
-    
-    .risk-score-badge.bajo {
-        background: #4caf50; /* Verde original */
-        color: white;
-    }
-    
-    .risk-table {
-        display: none; /* Ocultar la tabla ya que estamos usando el diseño de lista */
-    }
-    
-    .risk-table th {
-        display: none;
-    }
-    
-    .risk-table td {
-        display: none;
-    }
-    
-    .risk-table tr:hover {
-        background: #f9f9f9;
-    }
-    
-    .student-name {
-        font-weight: bold;
-        color: #333;
-        font-size: 16px;
-    }
-    
-    .matricula {
-        color: #666;
-        font-size: 12px;
-    }
-    
-    .risk-badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-weight: bold;
-        font-size: 12px;
-    }
-    
-    .risk-badge.alto {
-        background: #ffebee;
-        color: #c62828;
-    }
-    
-    .risk-badge.medio {
-        background: #fff3e0;
-        color: #e65100;
-    }
-    
-    .risk-badge.bajo {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-    
-    .score-bar {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .score-value {
-        font-weight: bold;
-        min-width: 30px;
-    }
-    
-    .score-visual {
-        flex: 1;
-        height: 20px;
-        background: #f0f0f0;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    
-    .score-fill {
-        height: 100%;
-        background: #cc1313;
-        transition: width 0.3s;
-    }
-    
-    .motivos-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 5px;
-    }
-    
-    .motivo-tag {
-        display: inline-block;
-        background: #e0f7fa;
-        color: #00838f;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: bold;
-    }
-    
-    .action-link {
-        color: #cc1313;
-        text-decoration: none;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    
-    .action-link:hover {
-        text-decoration: underline;
-    }
-    
-    .no-data {
-        text-align: center;
-        padding: 40px;
-        color: #999;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    .chart-container {
-        background: #2a2a4a;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        margin-bottom: 25px;
-        position: relative;
-        height: 300px;
+    @media (max-width: 600px) {
+        .kpi-row { grid-template-columns: 1fr; }
+        .header-objective { display: none; } /* Ocultar objetivo en móviles */
     }
 </style>
 
-<div class="dashboard-header">
-    <h2>📊 Panel de Riesgo Académico</h2>
-    <p>Última actualización: {{ now().strftime("%d/%m/%Y %H:%M") }}</p>
-    <p>Clasificación automática de estudiantes según indicadores de riesgo académico</p>
-</div>
-
-<!-- Estadísticas Generales -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-label">Total de Estudiantes</div>
-        <div class="stat-value">{{ estadisticas.total_estudiantes }}</div>
-    </div>
-    <div class="stat-card alto">
-        <div class="stat-label">Alto Riesgo</div>
-        <div class="stat-value alto">{{ estadisticas.alto_riesgo }}</div>
-        <div class="stat-percentage">{{ estadisticas.porcentaje_alto }}%</div>
-    </div>
-    <div class="stat-card medio">
-        <div class="stat-label">Medio Riesgo</div>
-        <div class="stat-value medio">{{ estadisticas.medio_riesgo }}</div>
-        <div class="stat-percentage">{{ estadisticas.porcentaje_medio }}%</div>
-    </div>
-    <div class="stat-card bajo">
-        <div class="stat-label">Bajo Riesgo</div>
-        <div class="stat-value bajo">{{ estadisticas.bajo_riesgo }}</div>
-        <div class="stat-percentage">{{ estadisticas.porcentaje_bajo }}%</div>
-    </div>
-</div>
-
-<div class="main-grid">
-    <!-- Columna Izquierda: Filtros y Gráfico -->
-    <div class="left-column">
-        <!-- Filtros -->
-        <div class="filters-section">
-            <h3 style="margin-top: 0; color: #333;">Filtros</h3>
-            <form method="GET" action="{{ url_for('dashboard_risk') }}">
-                <div class="filters-grid">
-            <div class="filter-group">
-                <label for="nivel_riesgo">Nivel de Riesgo:</label>
-                <select id="nivel_riesgo" name="nivel_riesgo">
-                    <option value="">-- Todos --</option>
-                    <option value="alto" {% if filtros.nivel_riesgo == 'alto' %}selected{% endif %}>Alto</option>
-                    <option value="medio" {% if filtros.nivel_riesgo == 'medio' %}selected{% endif %}>Medio</option>
-                    <option value="bajo" {% if filtros.nivel_riesgo == 'bajo' %}selected{% endif %}>Bajo</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="carrera">Carrera:</label>
-                <select id="carrera" name="carrera">
-                    <option value="">-- Todas --</option>
-                    {% for c in carreras %}
-                    <option value="{{ c }}" {% if filtros.carrera == c %}selected{% endif %}>{{ c }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="cuatrimestre">Cuatrimestre:</label>
-                <select id="cuatrimestre" name="cuatrimestre">
-                    <option value="">-- Todos --</option>
-                    {% for ct in cuatrimestres %}
-                    <option value="{{ ct }}" {% if filtros.cuatrimestre == ct %}selected{% endif %}>{{ ct }}°</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="busqueda">Buscar (Nombre/Matrícula):</label>
-                <input type="text" id="busqueda" name="busqueda" placeholder="Ingrese nombre o matrícula" value="{{ filtros.busqueda }}">
-            </div>
-        </div>
-        
-            <div class="filter-buttons">
-                <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
-                <a href="{{ url_for('dashboard_risk') }}" class="btn btn-secondary">Limpiar</a>
-            </div>
-        </form>
-    </div>
+<div class="dashboard-wrapper">
     
-    <!-- Gráfico de Distribución -->
-    <div class="chart-container">
-        <h3 style="margin-top: 0; color: #333;">Distribución de Riesgo</h3>
-        <canvas id="chartRiesgo"></canvas>
+    <div class="risk-header">
+        <div class="header-titles">
+            <h2>Panel de Riesgo Académico</h2>
+            <p>Última actualización: {{ now().strftime("%d de %B de %Y, %I:%M %p") }}</p>
+        </div>
+        <div class="header-objective">
+            <div class="info-icon">ⓘ</div>
+            <div>
+                <strong style="display:block; margin-bottom:4px; font-size:14px;">Objetivo del panel</strong>
+                <span style="font-size:12px; line-height: 1.4; display:block;">Identificar y visualizar estudiantes en diferentes niveles de riesgo académico para facilitar la intervención oportuna.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card blue">
+            <div class="kpi-content">
+                <h3>Estudiantes</h3>
+                <div class="number">{{ estadisticas.total_estudiantes }}</div>
+            </div>
+            <div class="kpi-icon blue">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </div>
+        </div>
+
+        <div class="kpi-card red">
+            <div class="kpi-content">
+                <h3>Alto riesgo</h3>
+                <div class="number">{{ estadisticas.alto_riesgo }}</div>
+            </div>
+            <div class="kpi-icon red">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+        </div>
+
+        <div class="kpi-card yellow">
+            <div class="kpi-content">
+                <h3>Medio riesgo</h3>
+                <div class="number">{{ estadisticas.medio_riesgo }}</div>
+            </div>
+            <div class="kpi-icon yellow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+        </div>
+
+        <div class="kpi-card green">
+            <div class="kpi-content">
+                <h3>Bajo riesgo</h3>
+                <div class="number">{{ estadisticas.bajo_riesgo }}</div>
+            </div>
+            <div class="kpi-icon green">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="split-content">
+        
+        <aside class="filters-sidebar">
+            <h3>Filtros</h3>
+            <form method="GET" action="{{ url_for('dashboard_risk') }}">
+                <div class="filter-group">
+                    <label>Nivel de Riesgo:</label>
+                    <select name="nivel_riesgo">
+                        <option value="">– Todos –</option>
+                        <option value="alto" {% if filtros.nivel_riesgo == 'alto' %}selected{% endif %}>Alto</option>
+                        <option value="medio" {% if filtros.nivel_riesgo == 'medio' %}selected{% endif %}>Medio</option>
+                        <option value="bajo" {% if filtros.nivel_riesgo == 'bajo' %}selected{% endif %}>Bajo</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Carrera:</label>
+                    <select name="carrera">
+                        <option value="">– Todas –</option>
+                        {% for c in carreras %}
+                        <option value="{{ c }}" {% if filtros.carrera == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Cuatrimestre:</label>
+                    <select name="cuatrimestre">
+                        <option value="">– Todos –</option>
+                        {% for ct in cuatrimestres %}
+                        <option value="{{ ct }}" {% if filtros.cuatrimestre == ct %}selected{% endif %}>{{ ct }}°</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Buscar (Nombre/Matrícula):</label>
+                    <input type="text" name="busqueda" placeholder="Ingrese nombre o matrícula" value="{{ filtros.busqueda }}">
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn-apply">Aplicar</button>
+                    <a href="{{ url_for('dashboard_risk') }}" class="btn-clear">Limpiar</a>
+                </div>
+            </form>
+        </aside>
+
+        <div class="risk-lists-wrapper">
+            
+            <div class="risk-section-card high">
+                <div class="section-header high">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Sección de estudiantes alto riesgo
+                </div>
+                {% if alto_riesgo %}
+                    {% for est in alto_riesgo %}
+                    <div class="student-row">
+                        <div class="student-info">
+                            <strong>{{ est.nombre }} {{ est.apellido_p }}</strong>
+                            <span>{{ est.matricula }} | {{ est.carrera }} ({{ est.cuatrimestre }}°)</span>
+                        </div>
+                        <a href="{{ url_for('student_history', student_id=est.student_id) }}" class="btn-link">Ver Historial</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-message">No hay estudiantes que mostrar en esta sección.</div>
+                {% endif %}
+            </div>
+
+            <div class="risk-section-card medium">
+                <div class="section-header medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Sección de estudiantes medio riesgo
+                </div>
+                {% if medio_riesgo %}
+                    {% for est in medio_riesgo %}
+                    <div class="student-row">
+                        <div class="student-info">
+                            <strong>{{ est.nombre }} {{ est.apellido_p }}</strong>
+                            <span>{{ est.matricula }} | {{ est.carrera }} ({{ est.cuatrimestre }}°)</span>
+                        </div>
+                        <a href="{{ url_for('student_history', student_id=est.student_id) }}" class="btn-link">Ver Historial</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-message">No hay estudiantes que mostrar en esta sección.</div>
+                {% endif %}
+            </div>
+
+            <div class="risk-section-card low">
+                <div class="section-header low">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Sección de estudiantes bajo riesgo
+                </div>
+                {% if bajo_riesgo %}
+                    {% for est in bajo_riesgo %}
+                    <div class="student-row">
+                        <div class="student-info">
+                            <strong>{{ est.nombre }} {{ est.apellido_p }}</strong>
+                            <span>{{ est.matricula }} | {{ est.carrera }} ({{ est.cuatrimestre }}°)</span>
+                        </div>
+                        <a href="{{ url_for('student_history', student_id=est.student_id) }}" class="btn-link">Ver Historial</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-message">No hay estudiantes que mostrar en esta sección.</div>
+                {% endif %}
+            </div>
+
+        </div>
     </div>
 </div>
 
-<!-- Columna Derecha: Tablas de Riesgo -->
-<div class="right-column">
-    <!-- Estudiantes en Alto Riesgo -->
-    {% if alto_riesgo %}
-    <div class="risk-section">
-        <div class="risk-section-title alto">
-            Sección de estudiantes alto riesgo
-        </div>
-        
-        <div class="risk-list">
-            {% for estudiante in alto_riesgo %}
-            <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="risk-item alto">
-                <div>
-                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                    <div class="matricula">ID: {{ estudiante.matricula }} | Carrera: {{ estudiante.carrera }} | Cuatrimestre: {{ estudiante.cuatrimestre_actual }}</div>
-                    <div class="motivos-list">
-                        {% for motivo in estudiante.motivos_riesgo %}
-                        <span class="motivo-tag">{{ motivo }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="risk-score-badge alto">
-                    Riesgo: {{ estudiante.puntuacion }}%
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Estudiantes en Medio Riesgo -->
-    {% if medio_riesgo %}
-    <div class="risk-section">
-        <div class="risk-section-title medio">
-            Sección de estudiantes medio riesgo
-        </div>
-        
-        <div class="risk-list">
-            {% for estudiante in medio_riesgo %}
-            <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="risk-item medio">
-                <div>
-                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                    <div class="matricula">ID: {{ estudiante.matricula }} | Carrera: {{ estudiante.carrera }} | Cuatrimestre: {{ estudiante.cuatrimestre_actual }}</div>
-                    <div class="motivos-list">
-                        {% for motivo in estudiante.motivos_riesgo %}
-                        <span class="motivo-tag">{{ motivo }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="risk-score-badge medio">
-                    Riesgo: {{ estudiante.puntuacion }}%
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Estudiantes en Bajo Riesgo -->
-    {% if bajo_riesgo %}
-    <div class="risk-section">
-        <div class="risk-section-title bajo">
-            Sección de estudiantes bajo riesgo
-        </div>
-        
-        <div class="risk-list">
-            {% for estudiante in bajo_riesgo %}
-            <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="risk-item bajo">
-                <div>
-                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                    <div class="matricula">ID: {{ estudiante.matricula }} | Carrera: {{ estudiante.carrera }} | Cuatrimestre: {{ estudiante.cuatrimestre_actual }}</div>
-                    <div class="motivos-list">
-                        {% for motivo in estudiante.motivos_riesgo %}
-                        <span class="motivo-tag">{{ motivo }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="risk-score-badge bajo">
-                    Riesgo: {{ estudiante.puntuacion }}%
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    {% if not alto_riesgo and not medio_riesgo and not bajo_riesgo %}
-    <div class="no-data">
-        <p>No hay estudiantes que coincidan con los filtros seleccionados</p>
-    </div>
-    {% endif %}
-</div>
-</div>
-
-<!-- Scripts para gráficos -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Gráfico de Distribución de Riesgo
-    const ctxRiesgo = document.getElementById("chartRiesgo").getContext("2d");
-    new Chart(ctxRiesgo, {
-        type: "doughnut",
-        data: {
-            labels: ["Alto Riesgo", "Medio Riesgo", "Bajo Riesgo"],
-            datasets: [{
-                data: [
-                    {{ estadisticas.alto_riesgo }},
-                    {{ estadisticas.medio_riesgo }},
-                    {{ estadisticas.bajo_riesgo }}
-                ],
-                backgroundColor: [\'#cc1313\', \'#ff9800\', \'#4caf50\'],
-                borderColor: [\'#990000\', \'#e68900\', \'#388e3c\'],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: "bottom",
-                    labels: {
-                        font: { size: 12 },
-                        padding: 15
-                    }
-                }
-            }
-        }
-    });
-</script>
+<canvas id="chartRiesgo" style="display:none;"></canvas>
 
 {% endblock %}
