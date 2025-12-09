@@ -258,12 +258,21 @@ def register_asesoria():
     
     if request.method == 'POST':
         data = request.form
+        # Obtener la matrícula del estudiante seleccionado
+        estudiante_id = data.get('estudiante_id')
+        matricula = None
+        
+        if estudiante_id:
+            estudiante = db.execute("SELECT matricula FROM estudiantes WHERE id = ?", (estudiante_id,)).fetchone()
+            if estudiante:
+                matricula = estudiante['matricula']
+        
         db.execute('''
-            INSERT INTO asesoria (nombre, apellido_p, apellido_m, unidad, parcial, periodo, tema, fecha, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO asesoria (nombre, apellido_p, apellido_m, matricula, unidad, parcial, periodo, tema, fecha, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.get('nombre'), data.get('apellido_p'), data.get('apellido_m'),
-            data.get('unidad'), data.get('parcial'), data.get('periodo'),
+            matricula, data.get('unidad'), data.get('parcial'), data.get('periodo'),
             data.get('tema'), data.get('fecha'), datetime.utcnow().isoformat()
         ))
         db.commit()

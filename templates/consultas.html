@@ -33,6 +33,7 @@
                 <tr>
                     <th>Nombre</th>
                     <th>Matrícula</th>
+                    <th>Unidad</th>
                     <th>Parcial</th>
                     <th>Tema</th>
                     <th>Fecha</th>
@@ -43,6 +44,7 @@
             {% for a in asesorias %}
                 <tr>
                     <td>{{ a['nombre'] }} {{ a['apellido_p'] }} {{ a['apellido_m'] }}</td>
+                    <td>{{ a['matricula'] or 'N/A' }}</td>
                     <td>{{ a['unidad'] }}</td>
                     <td>{{ a['parcial'] }}</td>
                     <td>{{ a['tema'] }}</td>

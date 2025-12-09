@@ -87,13 +87,14 @@ def generar_datos_prueba():
                 
                 cursor.execute(
                     '''
-                    INSERT INTO asesoria (nombre, apellido_p, apellido_m, unidad, parcial, periodo, tema, fecha, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO asesoria (nombre, apellido_p, apellido_m, matricula, unidad, parcial, periodo, tema, fecha, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ''',
                     (
                         estudiante['nombre'],
                         estudiante['apellido_p'],
                         estudiante['apellido_m'],
+                        estudiante['matricula'],
                         unidad,
                         parcial,
                         periodo,
