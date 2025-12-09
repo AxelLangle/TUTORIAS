@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, g, flash, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, g, flash, send_file, jsonify
 import re
 import sqlite3
 from datetime import datetime
@@ -894,11 +894,15 @@ def nuevo_estudiante():
         
         # Validar que la matrícula no exista
         existe = db.execute("SELECT id FROM estudiantes WHERE matricula = ?", (data.get('matricula'),)).fetchone()
-        
-        if existe:
-            flash(f"Ya existe un estudiante con la matrícula {data.get('matricula')}.", "error")
-            return redirect(url_for('nuevo_estudiante'))
-        
+              if existe:
+            flash(f"Ya existe un estudiante con la matrícula {data.get(\'matricula\')}.", "error")
+            return redirect(url_for(\'nuevo_estudiante\'))
+
+        # Obtener el nombre completo de la carrera
+        carrera_sigla = data.get('carrera')
+        programa_id = int(data.get('programa_educativo', 2))
+        carreras_map = obtener_carreras_por_programa(programa_id)
+        carrera_nombre = carreras_map.get(carrera_sigla, carrera_sigla) # Fallback a sigla si no se encuentra        
         try:
             db.execute(
                 '''
@@ -909,9 +913,8 @@ def nuevo_estudiante():
                     data.get('matricula'),
                     data.get('nombre'),
                     data.get('apellido_p'),
-                    data.get('apellido_m'),
-                    data.get('cuatrimestre_actual'),
-                    data.get('carrera'),
+                    data.get('apellido_m                    data.get(\'cuatrimestre_actual\'),
+                    carrera_nombre,
                     data.get('grupo'),
                     int(data.get('programa_educativo', 2)),
                     datetime.now().isoformat(),
@@ -948,7 +951,7 @@ def editar_estudiante(id):
                     data.get('apellido_p'),
                     data.get('apellido_m'),
                     data.get('cuatrimestre_actual'),
-                    data.get('carrera'),
+                    carrera_nombre,
                     datetime.now().isoformat(),
                     id
                 )
@@ -1058,3 +1061,71 @@ def perfil_estudiante(id):
 # ---------------------------
 if __name__ == '__main__':
     app.run(debug=True)
+
+# ---------------------------
+# API para selección dinámica
+# ---------------------------
+
+@app.route('/api/carreras')
+@login_required
+def api_carreras():
+    """API para obtener la lista de todas las carreras disponibles."""
+    todas_carreras = obtener_todas_las_carreras()
+    # Devolvemos un array de objetos {sigla: nombre}
+    carreras_list = [{'sigla': sigla, 'nombre': nombre} for sigla, nombre in todas_carreras.items()]
+    return jsonify(carreras_list)
+
+@app.route('/api/grupos')
+@login_required
+def api_grupos():
+    """API para obtener los grupos disponibles según la carrera y cuatrimestre."""
+    carrera_sigla = request.args.get('carrera_sigla')
+    cuatrimestre = request.args.get('cuatrimestre')
+    
+    if not carrera_sigla or not cuatrimestre:
+        return jsonify({"error": "Faltan parámetros: carrera_sigla y cuatrimestre"}), 400
+
+    # Asumimos que la sigla de la carrera es suficiente para determinar el programa
+    # Esto es una simplificación, en un sistema real se necesitaría una tabla de carreras
+    programa_id = 1 if carrera_sigla in PROGRAMA_EDUCATIVO_1 else 2
+    
+    grupos = obtener_grupos_disponibles(cuatrimestre, programa_id)
+    
+    # Filtramos los grupos generados para que solo incluyan la sigla de la carrera solicitada
+    grupos_filtrados = [g for g in grupos if g.endswith(carrera_sigla)]
+    
+    return jsonify(grupos_filtrados)
+
+@app.route('/api/estudiantes')
+@login_required
+def api_estudiantes():
+    """API para obtener estudiantes filtrados por carrera, cuatrimestre y grupo."""
+    carrera = request.args.get('carrera')
+    cuatrimestre = request.args.get('cuatrimestre')
+    grupo = request.args.get('grupo')
+    
+    db = get_db()
+    query = "SELECT id, nombre, apellido_p, apellido_m, matricula FROM estudiantes WHERE 1=1"
+    params = []
+    
+    if carrera:
+        query += " AND carrera = ?"
+        params.append(carrera)
+    
+    if cuatrimestre:
+        query += " AND cuatrimestre_actual = ?"
+        params.append(cuatrimestre)
+        
+    # La tabla de estudiantes no tiene columna de grupo, por lo que no se puede filtrar por grupo.
+    # Se ignora el filtro de grupo por ahora, o se podría añadir un campo de grupo a la tabla de estudiantes.
+    # Por simplicidad, solo filtramos por carrera y cuatrimestre.
+    
+    estudiantes = db.execute(query, params).fetchall()
+    
+    # Formatear el nombre completo para el select
+    estudiantes_list = [{
+        'id': est['id'],
+        'nombre_completo': f"{est['nombre']} {est['apellido_p']} {est['apellido_m']} ({est['matricula']})"
+    } for est in estudiantes]
+    
+    return jsonify(estudiantes_list)

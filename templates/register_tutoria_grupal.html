@@ -8,20 +8,32 @@
         <!-- Título dentro del contenedor -->
         <h2 style="text-align:center; color:#cc1313; margin-bottom:25px; font-size:2rem;">Registrar Tutoría Grupal</h2>
 
-        <label>Nombre del grupo:
-            <input name="grupo_nombre" required placeholder="Grupo A">
-        </label>
-        <label>Carrera:
-            <input name="carrera" placeholder="Ingeniería en Sistemas">
-        </label>
-        <label>Cuatrimestre (Período: {{ periodo_actual }}):
-            <select name="cuatrimestre">
-                <option value="">Seleccione...</option>
-                {% for cuatri in cuatrimestres_disponibles %}
-                <option value="{{ cuatri }}">{{ cuatri }}°</option>
-                {% endfor %}
-            </select>
-        </label>
+        <div class="group-selector">
+            <label style="font-weight: 700; color: #cc1313;">Seleccionar Grupo:</label>
+            
+            <label>Cuatrimestre:
+                <select id="cuatrimestre" name="cuatrimestre" onchange="updateCarreras()">
+                    <option value="">Seleccione Cuatrimestre</option>
+                    {% for cuatri in cuatrimestres_disponibles %}
+                    <option value="{{ cuatri }}">{{ cuatri }}°</option>
+                    {% endfor %}
+                </select>
+            </label>
+            
+            <label>Carrera:
+                <select id="carrera" name="carrera" onchange="updateGrupos()">
+                    <option value="">Seleccione Carrera</option>
+                </select>
+            </label>
+            
+            <label>Grupo:
+                <select id="grupo" name="grupo_nombre">
+                    <option value="">Seleccione Grupo</option>
+                </select>
+            </label>
+            
+            <input type="hidden" id="carrera_sigla" name="carrera_sigla">
+        </div>
         <label>Motivo:
             <input name="motivo" placeholder="Motivo de la tutoría">
         </label>
@@ -35,6 +47,15 @@
 </div>
 
 <style>
+.group-selector {
+    background: #f0f8ff;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #cc1313;
+    display: grid;
+    gap: 15px;
+}
+
 .form-container {
     width: 100%;
     max-width: 700px;
@@ -105,6 +126,84 @@
     min-height: 70px;
 }
 </style>
+
+<script>
+async function fetchAPI(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        console.error(\'Error fetching data from:\', url, response.statusText);
+        return [];
+    }
+    return response.json();
+}
+
+async function updateCarreras() {
+    const cuatrimestreSelect = document.getElementById(\'cuatrimestre\');
+    const carreraSelect = document.getElementById(\'carrera\');
+    
+    carreraSelect.innerHTML = \'<option value="">Seleccione Carrera</option>\';
+    
+    const cuatrimestre = cuatrimestreSelect.value;
+    if (!cuatrimestre) {
+        updateGrupos(); // Limpiar grupos
+        return;
+    }
+
+    const carreras = await fetchAPI(\'/api/carreras\');
+    
+    carreras.forEach(carrera => {
+        const option = document.createElement(\'option\');
+        option.value = carrera.nombre; // Usar el nombre completo para el formulario
+        option.dataset.sigla = carrera.sigla; // Guardar la sigla para la llamada a grupos
+        option.textContent = carrera.nombre;
+        carreraSelect.appendChild(option);
+    });
+    
+    updateGrupos();
+}
+
+async function updateGrupos() {
+    const cuatrimestreSelect = document.getElementById(\'cuatrimestre\');
+    const carreraSelect = document.getElementById(\'carrera\');
+    const grupoSelect = document.getElementById(\'grupo\');
+    const carreraSiglaInput = document.getElementById(\'carrera_sigla\');
+    
+    grupoSelect.innerHTML = \'<option value="">Seleccione Grupo</option>\';
+    
+    const cuatrimestre = cuatrimestreSelect.value;
+    const selectedCarreraOption = carreraSelect.options[carreraSelect.selectedIndex];
+    const carreraSigla = selectedCarreraOption ? selectedCarreraOption.dataset.sigla : null;
+    
+    // Actualizar el campo oculto de la sigla de la carrera
+    carreraSiglaInput.value = carreraSigla || \'\';
+    
+    if (!cuatrimestre || !carreraSigla) {
+        return;
+    }
+    
+    const grupos = await fetchAPI(`/api/grupos?carrera_sigla=${carreraSigla}&cuatrimestre=${cuatrimestre}`);
+    
+    grupos.forEach(grupo => {
+        const option = document.createElement(\'option\');
+        option.value = grupo;
+        option.textContent = grupo;
+        grupoSelect.appendChild(option);
+    });
+}
+
+// Inicializar al cargar
+window.onload = function() {
+    // La lista de cuatrimestres ya está precargada por Jinja
+    // Solo necesitamos llamar a updateCarreras cuando el cuatrimestre cambie
+    document.getElementById(\'cuatrimestre\').addEventListener(\'change\', updateCarreras);
+    document.getElementById(\'carrera\').addEventListener(\'change\', updateGrupos);
+    
+    // Llamar a updateCarreras para inicializar la lista de carreras si ya hay un cuatrimestre seleccionado
+    if (document.getElementById(\'cuatrimestre\').value) {
+        updateCarreras();
+    }
+};
+</script>
 {% endblock %}
 
 

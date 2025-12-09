@@ -103,6 +103,13 @@ def obtener_grupos_disponibles(cuatrimestre, programa_id):
             
     return grupos_disponibles
 
+def obtener_todas_las_carreras():
+    """Combina las carreras de todos los programas educativos en un solo diccionario."""
+    carreras = {}
+    carreras.update(PROGRAMA_EDUCATIVO_1)
+    carreras.update(PROGRAMA_EDUCATIVO_2)
+    return carreras
+
 def decodificar_grupo(grupo_id):
     """
     Decodifica un ID de grupo para obtener sus componentes.

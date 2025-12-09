@@ -154,6 +154,31 @@
         margin-bottom: 30px;
     }
     
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr; /* 1/3 para filtros/gráfico, 2/3 para tablas */
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+    
+    .left-column {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+    
+    .right-column {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+    
+    @media (max-width: 1200px) {
+        .main-grid {
+            grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
+        }
+    }
+    
     .risk-section-title {
         font-size: 18px;
         font-weight: bold;
@@ -342,24 +367,21 @@
     </div>
 </div>
 
-<!-- Gráfico de Distribución -->
-<div class="chart-container">
-    <h3 style="margin-top: 0; color: #333;">Distribución de Riesgo</h3>
-    <canvas id="chartRiesgo"></canvas>
-</div>
-
-<!-- Filtros -->
-<div class="filters-section">
-    <h3 style="margin-top: 0; color: #333;">Filtros</h3>
-    <form method="GET" action="{{ url_for('dashboard_risk') }}">
-        <div class="filters-grid">
+<div class="main-grid">
+    <!-- Columna Izquierda: Filtros y Gráfico -->
+    <div class="left-column">
+        <!-- Filtros -->
+        <div class="filters-section">
+            <h3 style="margin-top: 0; color: #333;">Filtros</h3>
+            <form method="GET" action="{{ url_for(\'dashboard_risk\') }}">
+                <div class="filters-grid">
             <div class="filter-group">
                 <label for="nivel_riesgo">Nivel de Riesgo:</label>
                 <select id="nivel_riesgo" name="nivel_riesgo">
                     <option value="">-- Todos --</option>
-                    <option value="alto" {% if filtros.nivel_riesgo == 'alto' %}selected{% endif %}>Alto</option>
-                    <option value="medio" {% if filtros.nivel_riesgo == 'medio' %}selected{% endif %}>Medio</option>
-                    <option value="bajo" {% if filtros.nivel_riesgo == 'bajo' %}selected{% endif %}>Bajo</option>
+                    <option value="alto" {% if filtros.nivel_riesgo == \'alto\' %}selected{% endif %}>Alto</option>
+                    <option value="medio" {% if filtros.nivel_riesgo == \'medio\' %}selected{% endif %}>Medio</option>
+                    <option value="bajo" {% if filtros.nivel_riesgo == \'bajo\' %}selected{% endif %}>Bajo</option>
                 </select>
             </div>
             
@@ -389,201 +411,212 @@
             </div>
         </div>
         
-        <div class="filter-buttons">
-            <button type="submit" class="btn btn-primary">🔍 Aplicar Filtros</button>
-            <a href="{{ url_for('dashboard_risk') }}" class="btn btn-secondary">↻ Limpiar Filtros</a>
+            <div class="filter-buttons">
+                <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
+                <a href="{{ url_for(\'dashboard_risk\') }}" class="btn btn-secondary">Limpiar</a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Gráfico de Distribución -->
+    <div class="chart-container">
+        <h3 style="margin-top: 0; color: #333;">Distribución de Riesgo</h3>
+        <canvas id="chartRiesgo"></canvas>
+    </div>
+</div>
+
+<!-- Columna Derecha: Tablas de Riesgo -->
+<div class="right-column">
+    <!-- Estudiantes en Alto Riesgo -->
+    {% if alto_riesgo %}
+    <div class="risk-section">
+        <div class="risk-section-title alto">
+            <span>🔴 ALTO RIESGO - REQUIERE ATENCIÓN INMEDIATA</span>
+            <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ alto_riesgo|length }} estudiante(s)</span>
         </div>
-    </form>
-</div>
-
-<!-- Estudiantes en Alto Riesgo -->
-{% if alto_riesgo %}
-<div class="risk-section">
-    <div class="risk-section-title alto">
-        <span>🔴 ALTO RIESGO - INTERVENCIÓN URGENTE</span>
-        <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ alto_riesgo|length }} estudiante(s)</span>
-    </div>
-    
-    <table class="risk-table">
-        <thead>
-            <tr>
-                <th>Matrícula / Nombre</th>
-                <th>Carrera</th>
-                <th>Cuatrimestre</th>
-                <th>Motivos Principales</th>
-                <th>Tutorías</th>
-                <th>Puntuación</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for estudiante in alto_riesgo %}
-            <tr>
-                <td>
-                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                    <div class="matricula">{{ estudiante.matricula }}</div>
-                </td>
-                <td>{{ estudiante.carrera }}</td>
-                <td>{{ estudiante.cuatrimestre }}°</td>
-                <td>
-                    <div class="motivos-list">
-                        {% for motivo in estudiante.motivos_frecuentes[:2] %}
-                        <span class="motivo-tag">{{ motivo }}</span>
-                        {% endfor %}
-                    </div>
-                </td>
-                <td>{{ estudiante.num_tutorias }}</td>
-                <td>
-                    <div class="score-bar">
-                        <span class="score-value">{{ estudiante.puntuacion }}</span>
-                        <div class="score-visual">
-                            <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%"></div>
+        
+        <table class="risk-table">
+            <thead>
+                <tr>
+                    <th>Matrícula / Nombre</th>
+                    <th>Carrera</th>
+                    <th>Cuatrimestre</th>
+                    <th>Motivos Principales</th>
+                    <th>Tutorías</th>
+                    <th>Puntuación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for estudiante in alto_riesgo %}
+                <tr>
+                    <td>
+                        <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
+                        <div class="matricula">{{ estudiante.matricula }}</div>
+                    </td>
+                    <td>{{ estudiante.carrera }}</td>
+                    <td>{{ estudiante.cuatrimestre }}°</td>
+                    <td>
+                        <div class="motivos-list">
+                            {% for motivo in estudiante.motivos_frecuentes[:2] %}
+                            <span class="motivo-tag">{{ motivo }}</span>
+                            {% endfor %}
                         </div>
-                    </div>
-                </td>
-                <td>
-                    <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% endif %}
-
-<!-- Estudiantes en Medio Riesgo -->
-{% if medio_riesgo %}
-<div class="risk-section">
-    <div class="risk-section-title medio">
-        <span>🟡 MEDIO RIESGO - MONITOREO REQUERIDO</span>
-        <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ medio_riesgo|length }} estudiante(s)</span>
-    </div>
-    
-    <table class="risk-table">
-        <thead>
-            <tr>
-                <th>Matrícula / Nombre</th>
-                <th>Carrera</th>
-                <th>Cuatrimestre</th>
-                <th>Motivos Principales</th>
-                <th>Tutorías</th>
-                <th>Puntuación</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for estudiante in medio_riesgo %}
-            <tr>
-                <td>
-                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                    <div class="matricula">{{ estudiante.matricula }}</div>
-                </td>
-                <td>{{ estudiante.carrera }}</td>
-                <td>{{ estudiante.cuatrimestre }}°</td>
-                <td>
-                    <div class="motivos-list">
-                        {% for motivo in estudiante.motivos_frecuentes[:2] %}
-                        <span class="motivo-tag">{{ motivo }}</span>
-                        {% endfor %}
-                    </div>
-                </td>
-                <td>{{ estudiante.num_tutorias }}</td>
-                <td>
-                    <div class="score-bar">
-                        <span class="score-value">{{ estudiante.puntuacion }}</span>
-                        <div class="score-visual">
-                            <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%; background: #ff9800;"></div>
+                    </td>
+                    <td>{{ estudiante.num_tutorias }}</td>
+                    <td>
+                        <div class="score-bar">
+                            <span class="score-value">{{ estudiante.puntuacion }}</span>
+                            <div class="score-visual">
+                                <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%; background: #cc1313;"></div>
+                            </div>
                         </div>
-                    </div>
-                </td>
-                <td>
-                    <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% endif %}
-
-<!-- Estudiantes en Bajo Riesgo -->
-{% if bajo_riesgo %}
-<div class="risk-section">
-    <div class="risk-section-title bajo">
-        <span>🟢 BAJO RIESGO - DESEMPEÑO SATISFACTORIO</span>
-        <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ bajo_riesgo|length }} estudiante(s)</span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for(\'student_history\', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    
-    <table class="risk-table">
-        <thead>
-            <tr>
-                <th>Matrícula / Nombre</th>
-                <th>Carrera</th>
-                <th>Cuatrimestre</th>
-                <th>Motivos Principales</th>
-                <th>Tutorías</th>
-                <th>Puntuación</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for estudiante in bajo_riesgo %}
-            <tr>
-                <td>
-                    <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
-                    <div class="matricula">{{ estudiante.matricula }}</div>
-                </td>
-                <td>{{ estudiante.carrera }}</td>
-                <td>{{ estudiante.cuatrimestre }}°</td>
-                <td>
-                    <div class="motivos-list">
-                        {% for motivo in estudiante.motivos_frecuentes[:2] %}
-                        <span class="motivo-tag">{{ motivo }}</span>
-                        {% endfor %}
-                    </div>
-                </td>
-                <td>{{ estudiante.num_tutorias }}</td>
-                <td>
-                    <div class="score-bar">
-                        <span class="score-value">{{ estudiante.puntuacion }}</span>
-                        <div class="score-visual">
-                            <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%; background: #4caf50;"></div>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <a href="{{ url_for('student_history', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% endif %}
+    {% endif %}
 
-{% if not alto_riesgo and not medio_riesgo and not bajo_riesgo %}
-<div class="no-data">
-    <p>No hay estudiantes que coincidan con los filtros seleccionados</p>
+    <!-- Estudiantes en Medio Riesgo -->
+    {% if medio_riesgo %}
+    <div class="risk-section">
+        <div class="risk-section-title medio">
+            <span>🟡 MEDIO RIESGO - MONITOREO REQUERIDO</span>
+            <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ medio_riesgo|length }} estudiante(s)</span>
+        </div>
+        
+        <table class="risk-table">
+            <thead>
+                <tr>
+                    <th>Matrícula / Nombre</th>
+                    <th>Carrera</th>
+                    <th>Cuatrimestre</th>
+                    <th>Motivos Principales</th>
+                    <th>Tutorías</th>
+                    <th>Puntuación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for estudiante in medio_riesgo %}
+                <tr>
+                    <td>
+                        <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
+                        <div class="matricula">{{ estudiante.matricula }}</div>
+                    </td>
+                    <td>{{ estudiante.carrera }}</td>
+                    <td>{{ estudiante.cuatrimestre }}°</td>
+                    <td>
+                        <div class="motivos-list">
+                            {% for motivo in estudiante.motivos_frecuentes[:2] %}
+                            <span class="motivo-tag">{{ motivo }}</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td>{{ estudiante.num_tutorias }}</td>
+                    <td>
+                        <div class="score-bar">
+                            <span class="score-value">{{ estudiante.puntuacion }}</span>
+                            <div class="score-visual">
+                                <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%; background: #ff9800;"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{{ url_for(\'student_history\', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Estudiantes en Bajo Riesgo -->
+    {% if bajo_riesgo %}
+    <div class="risk-section">
+        <div class="risk-section-title bajo">
+            <span>🟢 BAJO RIESGO - DESEMPEÑO SATISFACTORIO</span>
+            <span style="margin-left: auto; font-size: 14px; font-weight: normal;">{{ bajo_riesgo|length }} estudiante(s)</span>
+        </div>
+        
+        <table class="risk-table">
+            <thead>
+                <tr>
+                    <th>Matrícula / Nombre</th>
+                    <th>Carrera</th>
+                    <th>Cuatrimestre</th>
+                    <th>Motivos Principales</th>
+                    <th>Tutorías</th>
+                    <th>Puntuación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for estudiante in bajo_riesgo %}
+                <tr>
+                    <td>
+                        <div class="student-name">{{ estudiante.nombre }} {{ estudiante.apellido_p }}</div>
+                        <div class="matricula">{{ estudiante.matricula }}</div>
+                    </td>
+                    <td>{{ estudiante.carrera }}</td>
+                    <td>{{ estudiante.cuatrimestre }}°</td>
+                    <td>
+                        <div class="motivos-list">
+                            {% for motivo in estudiante.motivos_frecuentes[:2] %}
+                            <span class="motivo-tag">{{ motivo }}</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td>{{ estudiante.num_tutorias }}</td>
+                    <td>
+                        <div class="score-bar">
+                            <span class="score-value">{{ estudiante.puntuacion }}</span>
+                            <div class="score-visual">
+                                <div class="score-fill" style="width: {{ (estudiante.puntuacion / 30) * 100 }}%; background: #4caf50;"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{{ url_for(\'student_history\', student_id=estudiante.student_id) }}" class="action-link">Ver Historial</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if not alto_riesgo and not medio_riesgo and not bajo_riesgo %}
+    <div class="no-data">
+        <p>No hay estudiantes que coincidan con los filtros seleccionados</p>
+    </div>
+    {% endif %}
 </div>
-{% endif %}
+</div>
 
 <!-- Scripts para gráficos -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Gráfico de Distribución de Riesgo
-    const ctxRiesgo = document.getElementById('chartRiesgo').getContext('2d');
+    const ctxRiesgo = document.getElementById(\'chartRiesgo\').getContext(\'2d\');
     new Chart(ctxRiesgo, {
-        type: 'doughnut',
+        type: \'doughnut\',
         data: {
-            labels: ['Alto Riesgo', 'Medio Riesgo', 'Bajo Riesgo'],
+            labels: [\'Alto Riesgo\', \'Medio Riesgo\', \'Bajo Riesgo\'],
             datasets: [{
                 data: [
                     {{ estadisticas.alto_riesgo }},
                     {{ estadisticas.medio_riesgo }},
                     {{ estadisticas.bajo_riesgo }}
                 ],
-                backgroundColor: ['#cc1313', '#ff9800', '#4caf50'],
-                borderColor: ['#990000', '#e68900', '#388e3c'],
+                backgroundColor: [\'#cc1313\', \'#ff9800\', \'#4caf50\'],
+                borderColor: [\'#990000\', \'#e68900\', \'#388e3c\'],
                 borderWidth: 2
             }]
         },
@@ -592,7 +625,7 @@
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom',
+                    position: \'bottom\',
                     labels: {
                         font: { size: 12 },
                         padding: 15

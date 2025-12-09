@@ -10,50 +10,30 @@
         <div class="student-selector">
             <label style="font-weight: 700; color: #cc1313;">Seleccionar Estudiante:</label>
             
-            <label>Programa Educativo:
-                <select id="programa_educativo" onchange="updateCarreras()">
-                    <option value="">Todos</option>
-                    <option value="1">Programa Educativo 1 (7° y 10°)</option>
-                    <option value="2">Programa Educativo 2 (1° y 4°)</option>
-                </select>
-            </label>
-            
-            <label>Carrera:
-                <select id="carrera" onchange="updateGrupos()">
-                    <option value="">Todas</option>
-                </select>
-            </label>
-            
             <label>Cuatrimestre:
-                <select id="cuatrimestre" onchange="updateGrupos()">
-                    <option value="">Todos</option>
+                <select id="cuatrimestre" onchange="updateCarreras()">
+                    <option value="">Seleccione Cuatrimestre</option>
                     {% for cuatri in cuatrimestres_disponibles %}
                     <option value="{{ cuatri }}">{{ cuatri }}°</option>
                     {% endfor %}
                 </select>
             </label>
             
+            <label>Carrera:
+                <select id="carrera" onchange="updateGrupos()">
+                    <option value="">Seleccione Carrera</option>
+                </select>
+            </label>
+            
             <label>Grupo:
                 <select id="grupo" onchange="updateEstudiantes()">
-                    <option value="">Todos</option>
+                    <option value="">Seleccione Grupo</option>
                 </select>
             </label>
             
             <label>Estudiante:
                 <select id="estudiante_select" name="estudiante_id" onchange="fillStudentData()">
                     <option value="">Seleccione un estudiante...</option>
-                    {% for est in estudiantes %}
-                    <option value="{{ est['id'] }}" 
-                            data-nombre="{{ est['nombre'] }}"
-                            data-apellido-p="{{ est['apellido_p'] }}"
-                            data-apellido-m="{{ est['apellido_m'] }}"
-                            data-programa="{{ est['programa_educativo'] }}"
-                            data-carrera="{{ est['carrera'] }}"
-                            data-cuatrimestre="{{ est['cuatrimestre_actual'] }}"
-                            data-grupo="{{ est['grupo'] }}">
-                        {{ est['matricula'] }} - {{ est['nombre'] }} {{ est['apellido_p'] }} {{ est['apellido_m'] }}
-                    </option>
-                    {% endfor %}
                 </select>
             </label>
         </div>
@@ -165,94 +145,62 @@
 </style>
 
 <script>
-const PROGRAMA_1 = {
-    "IS": "Ingeniería en Software",
-    "IMA": "Ingeniería en Mecánica Automotriz",
-    "IF": "Ingeniería Financiera",
-    "ITM": "Ingeniería en Tecnologías de Manufactura",
-    "LNI": "Licenciatura en Negocios Internacionales"
-};
+let estudiantesData = []; // Almacenará los datos de los estudiantes cargados
 
-const PROGRAMA_2 = {
-    "ITII": "Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital",
-    "IMA": "Licenciatura en Ingeniería en Mecánica Automotriz",
-    "IF": "Licenciatura en Ingeniería Financiera",
-    "IMAV": "Licenciatura en Ingeniería en Manufactura Avanzadas",
-    "LCIA": "Licenciatura en Comercio Internacional y Aduanas"
-};
-
-// Obtener todos los estudiantes del select
-const estudiantesData = Array.from(document.querySelectorAll('#estudiante_select option')).slice(1).map(opt => ({
-    id: opt.value,
-    nombre: opt.dataset.nombre,
-    apellidoP: opt.dataset.apellidoP,
-    apellidoM: opt.dataset.apellidoM,
-    programa: opt.dataset.programa,
-    carrera: opt.dataset.carrera,
-    cuatrimestre: opt.dataset.cuatrimestre,
-    grupo: opt.dataset.grupo,
-    text: opt.textContent
-}));
-
-function updateCarreras() {
-    const programaSelect = document.getElementById('programa_educativo');
-    const carreraSelect = document.getElementById('carrera');
-    const programa = programaSelect.value;
-    
-    carreraSelect.innerHTML = '<option value="">Todas</option>';
-    
-    if (!programa) {
-        // Mostrar todas las carreras
-        const todasCarreras = new Set([...Object.keys(PROGRAMA_1), ...Object.keys(PROGRAMA_2)]);
-        todasCarreras.forEach(sigla => {
-            const option = document.createElement('option');
-            option.value = sigla;
-            option.textContent = PROGRAMA_1[sigla] || PROGRAMA_2[sigla];
-            carreraSelect.appendChild(option);
-        });
-    } else {
-        const carreras = programa === '1' ? PROGRAMA_1 : PROGRAMA_2;
-        for (const [sigla, nombre] of Object.entries(carreras)) {
-            const option = document.createElement('option');
-            option.value = sigla;
-            option.textContent = nombre;
-            carreraSelect.appendChild(option);
-        }
+async function fetchAPI(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        console.error(\'Error fetching data from:\', url, response.statusText);
+        return [];
     }
+    return response.json();
+}
+
+async function updateCarreras() {
+    const cuatrimestreSelect = document.getElementById(\'cuatrimestre\');
+    const carreraSelect = document.getElementById(\'carrera\');
+    
+    carreraSelect.innerHTML = \'<option value="">Seleccione Carrera</option>\';
+    
+    const cuatrimestre = cuatrimestreSelect.value;
+    if (!cuatrimestre) {
+        updateGrupos(); // Limpiar grupos y estudiantes
+        return;
+    }
+
+    const carreras = await fetchAPI(\'/api/carreras\');
+    
+    carreras.forEach(carrera => {
+        const option = document.createElement(\'option\');
+        option.value = carrera.nombre; // Usar el nombre completo para el filtro de DB
+        option.dataset.sigla = carrera.sigla; // Guardar la sigla para la llamada a grupos
+        option.textContent = carrera.nombre;
+        carreraSelect.appendChild(option);
+    });
     
     updateGrupos();
 }
 
-function updateGrupos() {
-    const programaSelect = document.getElementById('programa_educativo');
-    const carreraSelect = document.getElementById('carrera');
-    const cuatrimestreSelect = document.getElementById('cuatrimestre');
-    const grupoSelect = document.getElementById('grupo');
+async function updateGrupos() {
+    const cuatrimestreSelect = document.getElementById(\'cuatrimestre\');
+    const carreraSelect = document.getElementById(\'carrera\');
+    const grupoSelect = document.getElementById(\'grupo\');
     
-    const programa = programaSelect.value;
-    const carrera = carreraSelect.value;
+    grupoSelect.innerHTML = \'<option value="">Seleccione Grupo</option>\';
+    
     const cuatrimestre = cuatrimestreSelect.value;
+    const selectedCarreraOption = carreraSelect.options[carreraSelect.selectedIndex];
+    const carreraSigla = selectedCarreraOption ? selectedCarreraOption.dataset.sigla : null;
     
-    grupoSelect.innerHTML = '<option value="">Todos</option>';
-    
-    // Filtrar estudiantes según los criterios
-    let estudiantesFiltrados = estudiantesData;
-    
-    if (programa) {
-        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.programa === programa);
-    }
-    if (carrera) {
-        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.grupo && e.grupo.includes(carrera));
-    }
-    if (cuatrimestre) {
-        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.cuatrimestre === cuatrimestre);
+    if (!cuatrimestre || !carreraSigla) {
+        updateEstudiantes(); // Limpiar estudiantes
+        return;
     }
     
-    // Obtener grupos únicos
-    const gruposUnicos = [...new Set(estudiantesFiltrados.map(e => e.grupo).filter(g => g))];
+    const grupos = await fetchAPI(`/api/grupos?carrera_sigla=${carreraSigla}&cuatrimestre=${cuatrimestre}`);
     
-    gruposUnicos.forEach(grupo => {
-        const option = document.createElement('option');
+    grupos.forEach(grupo => {
+        const option = document.createElement(\'option\');
         option.value = grupo;
         option.textContent = grupo;
         grupoSelect.appendChild(option);
@@ -261,65 +209,73 @@ function updateGrupos() {
     updateEstudiantes();
 }
 
-function updateEstudiantes() {
-    const programaSelect = document.getElementById('programa_educativo');
-    const carreraSelect = document.getElementById('carrera');
-    const cuatrimestreSelect = document.getElementById('cuatrimestre');
-    const grupoSelect = document.getElementById('grupo');
-    const estudianteSelect = document.getElementById('estudiante_select');
+async function updateEstudiantes() {
+    const cuatrimestreSelect = document.getElementById(\'cuatrimestre\');
+    const carreraSelect = document.getElementById(\'carrera\');
+    const grupoSelect = document.getElementById(\'grupo\');
+    const estudianteSelect = document.getElementById(\'estudiante_select\');
     
-    const programa = programaSelect.value;
-    const carrera = carreraSelect.value;
+    estudianteSelect.innerHTML = \'<option value="">Seleccione un estudiante...</option>\';
+    
     const cuatrimestre = cuatrimestreSelect.value;
+    const carrera = carreraSelect.value; // Nombre completo de la carrera
     const grupo = grupoSelect.value;
     
-    estudianteSelect.innerHTML = '<option value="">Seleccione un estudiante...</option>';
-    
-    // Filtrar estudiantes
-    let estudiantesFiltrados = estudiantesData;
-    
-    if (programa) {
-        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.programa === programa);
-    }
-    if (carrera) {
-        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.grupo && e.grupo.includes(carrera));
-    }
-    if (cuatrimestre) {
-        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.cuatrimestre === cuatrimestre);
-    }
-    if (grupo) {
-        estudiantesFiltrados = estudiantesFiltrados.filter(e => e.grupo === grupo);
+    if (!cuatrimestre || !carrera) {
+        return;
     }
     
-    estudiantesFiltrados.forEach(est => {
-        const option = document.createElement('option');
+    // La API de estudiantes actualmente solo filtra por carrera y cuatrimestre
+    // Se pasa el nombre completo de la carrera
+    const estudiantes = await fetchAPI(`/api/estudiantes?carrera=${encodeURIComponent(carrera)}&cuatrimestre=${cuatrimestre}&grupo=${grupo}`);
+    
+    estudiantesData = estudiantes; // Guardar los datos completos
+    
+    estudiantes.forEach(est => {
+        const option = document.createElement(\'option\');
         option.value = est.id;
-        option.textContent = est.text;
+        option.textContent = est.nombre_completo;
+        // Guardar los datos necesarios para el autocompletado
         option.dataset.nombre = est.nombre;
-        option.dataset.apellidoP = est.apellidoP;
-        option.dataset.apellidoM = est.apellidoM;
+        option.dataset.apellidoP = est.apellido_p;
+        option.dataset.apellidoM = est.apellido_m;
         estudianteSelect.appendChild(option);
     });
+    
+    fillStudentData(); // Limpiar o rellenar si hay un estudiante seleccionado
 }
 
 function fillStudentData() {
-    const select = document.getElementById('estudiante_select');
+    const select = document.getElementById(\'estudiante_select\');
     const selectedOption = select.options[select.selectedIndex];
     
-    if (selectedOption.value) {
-        document.getElementById('nombre').value = selectedOption.dataset.nombre;
-        document.getElementById('apellido_p').value = selectedOption.dataset.apellidoP;
-        document.getElementById('apellido_m').value = selectedOption.dataset.apellidoM;
+    const nombreInput = document.getElementById(\'nombre\');
+    const apellidoPInput = document.getElementById(\'apellido_p\');
+    const apellidoMInput = document.getElementById(\'apellido_m\');
+    
+    if (selectedOption && selectedOption.value) {
+        nombreInput.value = selectedOption.dataset.nombre;
+        apellidoPInput.value = selectedOption.dataset.apellidoP;
+        apellidoMInput.value = selectedOption.dataset.apellidoM;
     } else {
-        document.getElementById('nombre').value = '';
-        document.getElementById('apellido_p').value = '';
-        document.getElementById('apellido_m').value = '';
+        nombreInput.value = \'\';
+        apellidoPInput.value = \'\';
+        apellidoMInput.value = \'\';
     }
 }
 
 // Inicializar al cargar
 window.onload = function() {
-    updateCarreras();
+    // La lista de cuatrimestres ya está precargada por Jinja
+    // Solo necesitamos llamar a updateCarreras cuando el cuatrimestre cambie
+    document.getElementById(\'cuatrimestre\').addEventListener(\'change\', updateCarreras);
+    document.getElementById(\'carrera\').addEventListener(\'change\', updateGrupos);
+    document.getElementById(\'grupo\').addEventListener(\'change\', updateEstudiantes);
+    
+    // Llamar a updateCarreras para inicializar la lista de carreras si ya hay un cuatrimestre seleccionado
+    if (document.getElementById(\'cuatrimestre\').value) {
+        updateCarreras();
+    }
 };
 </script>
 
