@@ -261,26 +261,63 @@ def register_asesoria():
     
     if request.method == 'POST':
         data = request.form
-        # Obtener la matrícula del estudiante seleccionado
         estudiante_id = data.get('estudiante_id')
-        matricula = None
         
+        # Si se seleccionó un estudiante existente
         if estudiante_id:
-            estudiante = db.execute("SELECT matricula FROM estudiantes WHERE id = ?", (estudiante_id,)).fetchone()
+            estudiante = db.execute("SELECT * FROM estudiantes WHERE id = ?", (estudiante_id,)).fetchone()
             if estudiante:
-                matricula = estudiante['matricula']
-        
-        db.execute('''
-            INSERT INTO asesoria (nombre, apellido_p, apellido_m, matricula, unidad, parcial, periodo, tema, fecha, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            data.get('nombre'), data.get('apellido_p'), data.get('apellido_m'),
-            matricula, data.get('unidad'), data.get('parcial'), data.get('periodo'),
-            data.get('tema'), data.get('fecha'), datetime.utcnow().isoformat()
-        ))
-        db.commit()
-        flash('Asesoría registrada correctamente.', 'success')
-        return redirect(url_for('consultas'))
+                db.execute('''
+                    INSERT INTO asesoria (nombre, apellido_p, apellido_m, matricula, unidad, parcial, periodo, tema, fecha, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    estudiante['nombre'], estudiante['apellido_p'], estudiante['apellido_m'],
+                    estudiante['matricula'], data.get('unidad'), data.get('parcial'), data.get('periodo'),
+                    data.get('tema'), data.get('fecha'), datetime.utcnow().isoformat()
+                ))
+                db.commit()
+                flash('Asesoría registrada correctamente.', 'success')
+                return redirect(url_for('consultas'))
+        else:
+            # Registrar nuevo estudiante y luego la asesoría
+            matricula = data.get('matricula')
+            
+            # Verificar si ya existe un estudiante con esa matrícula
+            estudiante = db.execute("SELECT * FROM estudiantes WHERE matricula = ?", (matricula,)).fetchone()
+            
+            if not estudiante:
+                # Obtener el nombre completo de la carrera
+                carrera_nombre = data.get('carrera')
+                
+                # Crear nuevo estudiante
+                db.execute('''
+                    INSERT INTO estudiantes (matricula, nombre, apellido_p, apellido_m, cuatrimestre_actual, carrera, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    matricula,
+                    data.get('nombre'),
+                    data.get('apellido_p'),
+                    data.get('apellido_m'),
+                    data.get('cuatrimestre'),
+                    carrera_nombre,
+                    datetime.utcnow().isoformat(),
+                    datetime.utcnow().isoformat()
+                ))
+                db.commit()
+                estudiante = db.execute("SELECT * FROM estudiantes WHERE matricula = ?", (matricula,)).fetchone()
+            
+            # Registrar asesoría
+            db.execute('''
+                INSERT INTO asesoria (nombre, apellido_p, apellido_m, matricula, unidad, parcial, periodo, tema, fecha, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                data.get('nombre'), data.get('apellido_p'), data.get('apellido_m'),
+                matricula, data.get('unidad'), data.get('parcial'), data.get('periodo'),
+                data.get('tema'), data.get('fecha'), datetime.utcnow().isoformat()
+            ))
+            db.commit()
+            flash('Estudiante y asesoría registrados correctamente.', 'success')
+            return redirect(url_for('consultas'))
     
     # Obtener lista de estudiantes para el select
     estudiantes = db.execute("SELECT * FROM estudiantes ORDER BY apellido_p, apellido_m, nombre").fetchall()

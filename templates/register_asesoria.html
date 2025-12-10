@@ -8,46 +8,54 @@
         
         <!-- Selección de estudiante -->
         <div class="student-selector">
-            <label style="font-weight: 700; color: #cc1313;">Seleccionar Estudiante:</label>
-            
-            <label>Cuatrimestre:
-                <select id="cuatrimestre" onchange="updateCarreras()">
-                    <option value="">Seleccione Cuatrimestre</option>
+            <label>Seleccionar Estudiante Existente:
+                <select id="estudiante_select" name="estudiante_id" onchange="toggleStudentForm()">
+                    <option value="">Registrar nuevo estudiante...</option>
+                    {% for est in estudiantes %}
+                    <option value="{{ est['id'] }}">{{ est['matricula'] }} - {{ est['nombre'] }} {{ est['apellido_p'] }} {{ est['apellido_m'] }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+
+        <!-- Formulario de nuevo estudiante (se oculta si se selecciona uno existente) -->
+        <div id="new_student_form">
+            <label>Nombre:
+                <input id="nombre" name="nombre" placeholder="Juan">
+            </label>
+            <label>Apellido Paterno:
+                <input id="apellido_p" name="apellido_p" placeholder="Pérez">
+            </label>
+            <label>Apellido Materno:
+                <input id="apellido_m" name="apellido_m" placeholder="Gómez">
+            </label>
+            <label>Matrícula:
+                <input id="matricula" name="matricula" type="text" placeholder="1323148541" pattern="\d+" title="Solo números">
+            </label>
+            <label>Cuatrimestre (Período: {{ periodo_actual }}):
+                <select id="cuatrimestre" name="cuatrimestre">
+                    <option value="">Seleccione...</option>
                     {% for cuatri in cuatrimestres_disponibles %}
                     <option value="{{ cuatri }}">{{ cuatri }}°</option>
                     {% endfor %}
                 </select>
             </label>
-            
             <label>Carrera:
-                <select id="carrera" onchange="updateGrupos()">
-                    <option value="">Seleccione Carrera</option>
-                </select>
-            </label>
-            
-            <label>Grupo:
-                <select id="grupo" onchange="updateEstudiantes()">
-                    <option value="">Seleccione Grupo</option>
-                </select>
-            </label>
-            
-            <label>Estudiante:
-                <select id="estudiante_select" name="estudiante_id" onchange="fillStudentData()">
-                    <option value="">Seleccione un estudiante...</option>
+                <select id="carrera" name="carrera">
+                    <option value="">Seleccione...</option>
+                    <option value="Ingeniería en Software">Ingeniería en Software</option>
+                    <option value="Ingeniería en Mecánica Automotriz">Ingeniería en Mecánica Automotriz</option>
+                    <option value="Ingeniería Financiera">Ingeniería Financiera</option>
+                    <option value="Ingeniería en Tecnologías de Manufactura">Ingeniería en Tecnologías de Manufactura</option>
+                    <option value="Licenciatura en Negocios Internacionales">Licenciatura en Negocios Internacionales</option>
+                    <option value="Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital">Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital</option>
+                    <option value="Licenciatura en Ingeniería en Mecánica Automotriz">Licenciatura en Ingeniería en Mecánica Automotriz</option>
+                    <option value="Licenciatura en Ingeniería Financiera">Licenciatura en Ingeniería Financiera</option>
+                    <option value="Licenciatura en Ingeniería en Manufactura Avanzadas">Licenciatura en Ingeniería en Manufactura Avanzadas</option>
+                    <option value="Licenciatura en Comercio Internacional y Aduanas">Licenciatura en Comercio Internacional y Aduanas</option>
                 </select>
             </label>
         </div>
-        
-        <!-- Datos del estudiante (autocompletados) -->
-        <label>Nombre:
-            <input type="text" id="nombre" name="nombre" required readonly style="background: #f5f5f5;">
-        </label>
-        <label>Apellido Paterno:
-            <input type="text" id="apellido_p" name="apellido_p" required readonly style="background: #f5f5f5;">
-        </label>
-        <label>Apellido Materno:
-            <input type="text" id="apellido_m" name="apellido_m" required readonly style="background: #f5f5f5;">
-        </label>
         
         <!-- Datos de la asesoría -->
         <label>Unidad:
@@ -118,11 +126,9 @@
 
 .student-selector {
     background: #f0f8ff;
-    padding: 20px;
+    padding: 15px;
     border-radius: 10px;
     border: 2px solid #cc1313;
-    display: grid;
-    gap: 15px;
 }
 
 .form-container button {
@@ -145,137 +151,32 @@
 </style>
 
 <script>
-let estudiantesData = []; // Almacenará los datos de los estudiantes cargados
-
-async function fetchAPI(url) {
-    const response = await fetch(url);
-    if (!response.ok) {
-        console.error(\'Error fetching data from:\', url, response.statusText);
-        return [];
-    }
-    return response.json();
-}
-
-async function updateCarreras() {
-    const cuatrimestreSelect = document.getElementById(\'cuatrimestre\');
-    const carreraSelect = document.getElementById(\'carrera\');
+function toggleStudentForm() {
+    const select = document.getElementById('estudiante_select');
+    const form = document.getElementById('new_student_form');
+    const inputs = form.querySelectorAll('input, select');
     
-    carreraSelect.innerHTML = \'<option value="">Seleccione Carrera</option>\';
-    
-    const cuatrimestre = cuatrimestreSelect.value;
-    if (!cuatrimestre) {
-        updateGrupos(); // Limpiar grupos y estudiantes
-        return;
-    }
-
-    const carreras = await fetchAPI(\'/api/carreras\');
-    
-    carreras.forEach(carrera => {
-        const option = document.createElement(\'option\');
-        option.value = carrera.nombre; // Usar el nombre completo para el filtro de DB
-        option.dataset.sigla = carrera.sigla; // Guardar la sigla para la llamada a grupos
-        option.textContent = carrera.nombre;
-        carreraSelect.appendChild(option);
-    });
-    
-    updateGrupos();
-}
-
-async function updateGrupos() {
-    const cuatrimestreSelect = document.getElementById(\'cuatrimestre\');
-    const carreraSelect = document.getElementById(\'carrera\');
-    const grupoSelect = document.getElementById(\'grupo\');
-    
-    grupoSelect.innerHTML = \'<option value="">Seleccione Grupo</option>\';
-    
-    const cuatrimestre = cuatrimestreSelect.value;
-    const selectedCarreraOption = carreraSelect.options[carreraSelect.selectedIndex];
-    const carreraSigla = selectedCarreraOption ? selectedCarreraOption.dataset.sigla : null;
-    
-    if (!cuatrimestre || !carreraSigla) {
-        updateEstudiantes(); // Limpiar estudiantes
-        return;
-    }
-    
-    const grupos = await fetchAPI(`/api/grupos?carrera_sigla=${carreraSigla}&cuatrimestre=${cuatrimestre}`);
-    
-    grupos.forEach(grupo => {
-        const option = document.createElement(\'option\');
-        option.value = grupo;
-        option.textContent = grupo;
-        grupoSelect.appendChild(option);
-    });
-    
-    updateEstudiantes();
-}
-
-async function updateEstudiantes() {
-    const cuatrimestreSelect = document.getElementById(\'cuatrimestre\');
-    const carreraSelect = document.getElementById(\'carrera\');
-    const grupoSelect = document.getElementById(\'grupo\');
-    const estudianteSelect = document.getElementById(\'estudiante_select\');
-    
-    estudianteSelect.innerHTML = \'<option value="">Seleccione un estudiante...</option>\';
-    
-    const cuatrimestre = cuatrimestreSelect.value;
-    const carrera = carreraSelect.value; // Nombre completo de la carrera
-    const grupo = grupoSelect.value;
-    
-    if (!cuatrimestre || !carrera) {
-        return;
-    }
-    
-    // La API de estudiantes actualmente solo filtra por carrera y cuatrimestre
-    // Se pasa el nombre completo de la carrera
-    const estudiantes = await fetchAPI(`/api/estudiantes?carrera=${encodeURIComponent(carrera)}&cuatrimestre=${cuatrimestre}&grupo=${grupo}`);
-    
-    estudiantesData = estudiantes; // Guardar los datos completos
-    
-    estudiantes.forEach(est => {
-        const option = document.createElement(\'option\');
-        option.value = est.id;
-        option.textContent = est.nombre_completo;
-        // Guardar los datos necesarios para el autocompletado
-        option.dataset.nombre = est.nombre;
-        option.dataset.apellidoP = est.apellido_p;
-        option.dataset.apellidoM = est.apellido_m;
-        estudianteSelect.appendChild(option);
-    });
-    
-    fillStudentData(); // Limpiar o rellenar si hay un estudiante seleccionado
-}
-
-function fillStudentData() {
-    const select = document.getElementById(\'estudiante_select\');
-    const selectedOption = select.options[select.selectedIndex];
-    
-    const nombreInput = document.getElementById(\'nombre\');
-    const apellidoPInput = document.getElementById(\'apellido_p\');
-    const apellidoMInput = document.getElementById(\'apellido_m\');
-    
-    if (selectedOption && selectedOption.value) {
-        nombreInput.value = selectedOption.dataset.nombre;
-        apellidoPInput.value = selectedOption.dataset.apellidoP;
-        apellidoMInput.value = selectedOption.dataset.apellidoM;
+    if (select.value) {
+        // Si se seleccionó un estudiante existente, ocultar el formulario
+        form.style.display = 'none';
+        inputs.forEach(input => {
+            input.required = false;
+        });
     } else {
-        nombreInput.value = \'\';
-        apellidoPInput.value = \'\';
-        apellidoMInput.value = \'\';
+        // Si no, mostrar el formulario
+        form.style.display = 'grid';
+        // Hacer campos requeridos
+        document.getElementById('nombre').required = true;
+        document.getElementById('apellido_p').required = true;
+        document.getElementById('matricula').required = true;
+        document.getElementById('cuatrimestre').required = true;
+        document.getElementById('carrera').required = true;
     }
 }
 
-// Inicializar al cargar
+// Llamar al cargar la página
 window.onload = function() {
-    // La lista de cuatrimestres ya está precargada por Jinja
-    // Solo necesitamos llamar a updateCarreras cuando el cuatrimestre cambie
-    document.getElementById(\'cuatrimestre\').addEventListener(\'change\', updateCarreras);
-    document.getElementById(\'carrera\').addEventListener(\'change\', updateGrupos);
-    document.getElementById(\'grupo\').addEventListener(\'change\', updateEstudiantes);
-    
-    // Llamar a updateCarreras para inicializar la lista de carreras si ya hay un cuatrimestre seleccionado
-    if (document.getElementById(\'cuatrimestre\').value) {
-        updateCarreras();
-    }
+    toggleStudentForm();
 };
 </script>
 

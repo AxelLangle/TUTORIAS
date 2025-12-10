@@ -12,7 +12,7 @@
             <label style="font-weight: 700; color: #cc1313;">Seleccionar Grupo:</label>
             
             <label>Cuatrimestre:
-                <select id="cuatrimestre" name="cuatrimestre" onchange="updateCarreras()">
+                <select id="cuatrimestre" name="cuatrimestre" required>
                     <option value="">Seleccione Cuatrimestre</option>
                     {% for cuatri in cuatrimestres_disponibles %}
                     <option value="{{ cuatri }}">{{ cuatri }}°</option>
@@ -21,24 +21,22 @@
             </label>
             
             <label>Carrera:
-                <select id="carrera" name="carrera" onchange="updateGrupos()">
+                <select id="carrera" name="carrera" required>
                     <option value="">Seleccione Carrera</option>
                 </select>
             </label>
             
             <label>Grupo:
-                <select id="grupo" name="grupo_nombre">
+                <select id="grupo" name="grupo_nombre" required>
                     <option value="">Seleccione Grupo</option>
                 </select>
             </label>
-            
-            <input type="hidden" id="carrera_sigla" name="carrera_sigla">
         </div>
         <label>Motivo:
-            <input name="motivo" placeholder="Motivo de la tutoría">
+            <input name="motivo" placeholder="Motivo de la tutoría" required>
         </label>
         <label>Fecha de tutoría:
-            <input name="fecha" type="date">
+            <input name="fecha" type="date" required>
         </label>
         <div class="button-container">
             <button type="submit">Guardar</button>
@@ -83,6 +81,7 @@
 }
 
 .form-container input,
+.form-container select,
 .form-container textarea {
     margin-top: 6px;
     padding: 12px 14px;
@@ -94,6 +93,7 @@
 }
 
 .form-container input:focus,
+.form-container select:focus,
 .form-container textarea:focus {
     border-color: #cc1313;
     box-shadow: 0 0 6px rgba(76, 175, 80, 0.35);
@@ -129,81 +129,99 @@
 
 <script>
 async function fetchAPI(url) {
-    const response = await fetch(url);
-    if (!response.ok) {
-        console.error(\'Error fetching data from:\', url, response.statusText);
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            console.error('Error fetching data from:', url, response.statusText);
+            return [];
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error en fetchAPI:', error);
         return [];
     }
-    return response.json();
 }
 
 async function updateCarreras() {
-    const cuatrimestreSelect = document.getElementById(\'cuatrimestre\');
-    const carreraSelect = document.getElementById(\'carrera\');
+    const cuatrimestreSelect = document.getElementById('cuatrimestre');
+    const carreraSelect = document.getElementById('carrera');
+    const grupoSelect = document.getElementById('grupo');
     
-    carreraSelect.innerHTML = \'<option value="">Seleccione Carrera</option>\';
+    // Limpiar selects dependientes
+    carreraSelect.innerHTML = '<option value="">Seleccione Carrera</option>';
+    grupoSelect.innerHTML = '<option value="">Seleccione Grupo</option>';
     
     const cuatrimestre = cuatrimestreSelect.value;
     if (!cuatrimestre) {
-        updateGrupos(); // Limpiar grupos
         return;
     }
 
-    const carreras = await fetchAPI(\'/api/carreras\');
+    console.log('Cargando carreras para cuatrimestre:', cuatrimestre);
     
-    carreras.forEach(carrera => {
-        const option = document.createElement(\'option\');
-        option.value = carrera.nombre; // Usar el nombre completo para el formulario
-        option.dataset.sigla = carrera.sigla; // Guardar la sigla para la llamada a grupos
-        option.textContent = carrera.nombre;
-        carreraSelect.appendChild(option);
-    });
+    const carreras = await fetchAPI('/api/carreras');
+    console.log('Carreras recibidas:', carreras);
     
-    updateGrupos();
+    if (carreras && carreras.length > 0) {
+        carreras.forEach(carrera => {
+            const option = document.createElement('option');
+            option.value = carrera.nombre; // Usar el nombre completo para el formulario
+            option.dataset.sigla = carrera.sigla; // Guardar la sigla para la llamada a grupos
+            option.textContent = carrera.nombre;
+            carreraSelect.appendChild(option);
+        });
+    } else {
+        console.warn('No se recibieron carreras de la API');
+    }
 }
 
 async function updateGrupos() {
-    const cuatrimestreSelect = document.getElementById(\'cuatrimestre\');
-    const carreraSelect = document.getElementById(\'carrera\');
-    const grupoSelect = document.getElementById(\'grupo\');
-    const carreraSiglaInput = document.getElementById(\'carrera_sigla\');
+    const cuatrimestreSelect = document.getElementById('cuatrimestre');
+    const carreraSelect = document.getElementById('carrera');
+    const grupoSelect = document.getElementById('grupo');
     
-    grupoSelect.innerHTML = \'<option value="">Seleccione Grupo</option>\';
+    grupoSelect.innerHTML = '<option value="">Seleccione Grupo</option>';
     
     const cuatrimestre = cuatrimestreSelect.value;
     const selectedCarreraOption = carreraSelect.options[carreraSelect.selectedIndex];
     const carreraSigla = selectedCarreraOption ? selectedCarreraOption.dataset.sigla : null;
     
-    // Actualizar el campo oculto de la sigla de la carrera
-    carreraSiglaInput.value = carreraSigla || \'\';
-    
     if (!cuatrimestre || !carreraSigla) {
         return;
     }
     
-    const grupos = await fetchAPI(`/api/grupos?carrera_sigla=${carreraSigla}&cuatrimestre=${cuatrimestre}`);
+    console.log('Cargando grupos para:', { cuatrimestre, carreraSigla });
     
-    grupos.forEach(grupo => {
-        const option = document.createElement(\'option\');
-        option.value = grupo;
-        option.textContent = grupo;
+    const grupos = await fetchAPI(`/api/grupos?carrera_sigla=${encodeURIComponent(carreraSigla)}&cuatrimestre=${encodeURIComponent(cuatrimestre)}`);
+    console.log('Grupos recibidos:', grupos);
+    
+    if (grupos && grupos.length > 0) {
+        grupos.forEach(grupo => {
+            const option = document.createElement('option');
+            option.value = grupo;
+            option.textContent = grupo;
+            grupoSelect.appendChild(option);
+        });
+    } else {
+        console.warn('No se recibieron grupos de la API');
+        // Agregar mensaje informativo
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No hay grupos disponibles';
+        option.disabled = true;
         grupoSelect.appendChild(option);
-    });
+    }
 }
 
 // Inicializar al cargar
 window.onload = function() {
-    // La lista de cuatrimestres ya está precargada por Jinja
-    // Solo necesitamos llamar a updateCarreras cuando el cuatrimestre cambie
-    document.getElementById(\'cuatrimestre\').addEventListener(\'change\', updateCarreras);
-    document.getElementById(\'carrera\').addEventListener(\'change\', updateGrupos);
+    const cuatrimestreSelect = document.getElementById('cuatrimestre');
+    const carreraSelect = document.getElementById('carrera');
     
-    // Llamar a updateCarreras para inicializar la lista de carreras si ya hay un cuatrimestre seleccionado
-    if (document.getElementById(\'cuatrimestre\').value) {
-        updateCarreras();
-    }
+    // Agregar event listeners
+    cuatrimestreSelect.addEventListener('change', updateCarreras);
+    carreraSelect.addEventListener('change', updateGrupos);
+    
+    console.log('Formulario de tutoría grupal inicializado');
 };
 </script>
 {% endblock %}
-
-
