@@ -7,6 +7,7 @@ from pdf_generator import PDFReportGenerator
 from academic_history import AcademicHistoryAnalyzer
 from risk_assessment import RiskAssessmentEngine
 from utils import obtener_cuatrimestres_disponibles, obtener_nombre_periodo, validar_cuatrimestre, obtener_grupos_disponibles, obtener_carreras_por_programa, obtener_todas_las_carreras, decodificar_grupo, PROGRAMA_EDUCATIVO_1, PROGRAMA_EDUCATIVO_2
+from init_test_data import inicializar_datos_prueba
 
 DATABASE = 'asesorias.db'
 app = Flask(__name__)
@@ -117,6 +118,8 @@ def init_db():
 # Inicializar BD al iniciar la app
 with app.app_context():
     init_db()
+    # Inicializar datos de prueba si la base de datos está vacía
+    inicializar_datos_prueba()
 
 # ---------------------------
 # Decorador login_required

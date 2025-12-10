@@ -23,6 +23,7 @@ a = Analysis(
         'risk_assessment',
         'utils',
         'datos_inicio',
+        'init_test_data',
         'reportlab.pdfbase',
         'reportlab.pdfbase.ttfonts',
         'reportlab.lib.colors',
