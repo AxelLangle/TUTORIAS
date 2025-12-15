@@ -341,11 +341,42 @@
         </div>
     </div>
 
+    <div class="charts-wrapper" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div class="risk-section-card" style="padding: 20px;">
+            <h3 style="margin-top: 0; color: var(--up-red-light);">Distribución de Riesgo ({{ filtros.time_filter | capitalize }})</h3>
+            <canvas id="chartDistribucionRiesgo"></canvas>
+            <div style="text-align: center; margin-top: 15px;">
+                <button class="btn-chart-type" data-chart-id="chartDistribucionRiesgo" data-type="pie">Pastel</button>
+                <button class="btn-chart-type" data-chart-id="chartDistribucionRiesgo" data-type="bar">Barras</button>
+                <button class="btn-chart-type" data-chart-id="chartDistribucionRiesgo" data-type="doughnut">Dona</button>
+            </div>
+        </div>
+        <div class="risk-section-card" style="padding: 20px;">
+            <h3 style="margin-top: 0; color: var(--up-red-light);">Tendencia de Riesgo General (Últimos 6 Meses)</h3>
+            <canvas id="chartTendenciaRiesgo"></canvas>
+            <div style="text-align: center; margin-top: 15px;">
+                <button class="btn-chart-type" data-chart-id="chartTendenciaRiesgo" data-type="line">Líneas</button>
+                <button class="btn-chart-type" data-chart-id="chartTendenciaRiesgo" data-type="bar">Barras</button>
+                <button class="btn-chart-type" data-chart-id="chartTendenciaRiesgo" data-type="scatter">Puntos</button>
+            </div>
+        </div>
+    </div>
+
     <div class="split-content">
         
         <aside class="filters-sidebar">
             <h3>Filtros</h3>
             <form method="GET" action="{{ url_for('dashboard_risk') }}">
+                <div class="filter-group">
+                    <label>Filtro de Tiempo:</label>
+                    <select name="time_filter">
+                        <option value="todo" {% if filtros.time_filter == 'todo' %}selected{% endif %}>Todo el Historial</option>
+                        <option value="cuatrimestre" {% if filtros.time_filter == 'cuatrimestre' %}selected{% endif %}>Último Cuatrimestre</option>
+                        <option value="mes" {% if filtros.time_filter == 'mes' %}selected{% endif %}>Último Mes</option>
+                        <option value="semana" {% if filtros.time_filter == 'semana' %}selected{% endif %}>Última Semana</option>
+                    </select>
+                </div>
+
                 <div class="filter-group">
                     <label>Nivel de Riesgo:</label>
                     <select name="nivel_riesgo">
@@ -457,6 +488,84 @@
     </div>
 </div>
 
-<canvas id="chartRiesgo" style="display:none;"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    // Datos pasados desde Flask
+    const datosGraficaRiesgo = {{ datos_grafica_riesgo | tojson }};
+    
+    // Gráfica de Distribución de Riesgo
+    const ctxDistribucion = document.getElementById('chartDistribucionRiesgo').getContext('2d');
+    let chartDistribucion = new Chart(ctxDistribucion, {
+        type: 'pie', // Tipo inicial
+        data: {
+            labels: datosGraficaRiesgo.labels,
+            datasets: [{
+                data: datosGraficaRiesgo.data,
+                backgroundColor: datosGraficaRiesgo.colors,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: false,
+                }
+            }
+        }
+    });
+
+    // Gráfica de Tendencia de Riesgo (Placeholder)
+    const ctxTendencia = document.getElementById('chartTendenciaRiesgo').getContext('2d');
+    let chartTendencia = new Chart(ctxTendencia, {
+        type: 'line', // Tipo inicial
+        data: {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Puntuación Promedio de Riesgo',
+                data: [5, 7, 6, 8, 9, 7], // Datos de ejemplo
+                borderColor: 'var(--up-red-light)',
+                backgroundColor: 'rgba(204, 19, 19, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Función para cambiar el tipo de gráfica
+    function changeChartType(chartId, newType) {
+        let chart;
+        if (chartId === 'chartDistribucionRiesgo') {
+            chart = chartDistribucion;
+        } else if (chartId === 'chartTendenciaRiesgo') {
+            chart = chartTendencia;
+        }
+
+        if (chart) {
+            chart.config.type = newType;
+            chart.update();
+        }
+    }
+
+    // Asignar eventos a los botones
+    document.querySelectorAll('.btn-chart-type').forEach(button => {
+        button.addEventListener('click', function() {
+            const chartId = this.getAttribute('data-chart-id');
+            const newType = this.getAttribute('data-type');
+            changeChartType(chartId, newType);
+        });
+    });
+</script>
 
 {% endblock %}

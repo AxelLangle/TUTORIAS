@@ -6,7 +6,7 @@ from functools import wraps
 from pdf_generator import PDFReportGenerator
 from academic_history import AcademicHistoryAnalyzer
 from risk_assessment import RiskAssessmentEngine
-from utils import obtener_cuatrimestres_disponibles, obtener_nombre_periodo, validar_cuatrimestre, obtener_grupos_disponibles, obtener_carreras_por_programa, obtener_todas_las_carreras, decodificar_grupo, PROGRAMA_EDUCATIVO_1, PROGRAMA_EDUCATIVO_2
+from utils import obtener_cuatrimestres_disponibles, obtener_nombre_periodo, validar_cuatrimestre, obtener_grupos_disponibles, obtener_carreras_por_programa, obtener_todas_las_carreras, decodificar_grupo, obtener_fecha_inicio_filtro, PROGRAMA_EDUCATIVO_1, PROGRAMA_EDUCATIVO_2
 from init_test_data import inicializar_datos_prueba
 
 DATABASE = 'asesorias.db'
@@ -639,20 +639,26 @@ def dashboard_risk():
     carrera = request.args.get('carrera', '')
     cuatrimestre = request.args.get('cuatrimestre', '')
     busqueda = request.args.get('busqueda', '').strip().lower()
-        # Obtener todos los estudiantes registrados
+    time_filter = request.args.get('time_filter', 'todo') # Nuevo filtro de tiempo
+    
+    # Calcular fecha de inicio del filtro de tiempo
+    fecha_inicio = obtener_fecha_inicio_filtro(time_filter)
+    fecha_inicio_str = fecha_inicio.strftime('%Y-%m-%d')
+    
+    # Obtener todos los estudiantes registrados
     estudiantes_todos = db.execute("SELECT * FROM estudiantes").fetchall()
     
     # Preparar datos para evaluación
     estudiantes_data = []
     
     for estudiante in estudiantes_todos:
-        # Obtener todas las tutorías del estudiante
+        # Obtener todas las tutorías del estudiante, filtradas por fecha
         tutorias_est = db.execute(
-            "SELECT * FROM tutoria WHERE estudiante_id = ? ORDER BY fecha DESC",
-            (estudiante['id'],)
+            "SELECT * FROM tutoria WHERE estudiante_id = ? AND fecha >= ? ORDER BY fecha DESC",
+            (estudiante['id'], fecha_inicio_str)
         ).fetchall()
         
-        # Solo incluir estudiantes que tienen tutorías
+        # Solo incluir estudiantes que tienen tutorías en el período
         if not tutorias_est:
             continue
         
@@ -686,7 +692,8 @@ def dashboard_risk():
         'nivel_riesgo': nivel_riesgo,
         'carrera': carrera,
         'cuatrimestre': cuatrimestre,
-        'busqueda': busqueda
+        'busqueda': busqueda,
+        'time_filter': time_filter
     }
     evaluaciones_filtradas = engine.filtrar_evaluaciones(evaluaciones, filtros)
     
@@ -703,6 +710,13 @@ def dashboard_risk():
     cuatrimestres = sorted(set(e['cuatrimestre'] for e in evaluaciones if e['cuatrimestre'] != 'N/A'), 
                           key=lambda x: int(x) if x.isdigit() else 0)
     
+    # Datos para la gráfica de distribución de riesgo
+    datos_grafica_riesgo = {
+        'labels': ['Bajo Riesgo', 'Medio Riesgo', 'Alto Riesgo'],
+        'data': [estadisticas['bajo_riesgo'], estadisticas['medio_riesgo'], estadisticas['alto_riesgo']],
+        'colors': ['#4caf50', '#ff9800', '#cc1313']
+    }
+    
     return render_template(
         'dashboard_risk.html',
         estadisticas=estadisticas,
@@ -712,6 +726,7 @@ def dashboard_risk():
         carreras=obtener_todas_las_carreras(),
         cuatrimestres=cuatrimestres,
         filtros=filtros,
+        datos_grafica_riesgo=datos_grafica_riesgo, # Nuevo dato para la gráfica
         nombre=session.get('nombre')
     )
 

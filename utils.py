@@ -2,7 +2,7 @@
 Módulo de utilidades para el sistema de tutorías
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def obtener_cuatrimestres_disponibles():
     """
@@ -53,6 +53,32 @@ def validar_cuatrimestre(cuatrimestre):
     """
     cuatrimestres_disponibles = obtener_cuatrimestres_disponibles()
     return str(cuatrimestre) in cuatrimestres_disponibles
+
+def obtener_fecha_inicio_filtro(filtro_tiempo):
+    """
+    Calcula la fecha de inicio para los filtros de tiempo.
+    
+    Args:
+        filtro_tiempo (str): 'semana', 'mes', 'cuatrimestre'
+        
+    Returns:
+        datetime: Fecha de inicio del período de filtro.
+    """
+    hoy = datetime.now()
+    
+    if filtro_tiempo == 'semana':
+        # Últimos 7 días
+        return hoy - timedelta(days=7)
+    elif filtro_tiempo == 'mes':
+        # Últimos 30 días
+        return hoy - timedelta(days=30)
+    elif filtro_tiempo == 'cuatrimestre':
+        # Últimos 4 meses (aprox. 120 días)
+        return hoy - timedelta(days=120)
+    else:
+        # Sin filtro de tiempo (todos los datos)
+        return datetime.min # Usar una fecha muy antigua
+
 
 
 # --- Lógica de Programas Educativos y Grupos ---
